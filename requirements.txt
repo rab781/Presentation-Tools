@@ -1,0 +1,17 @@
+# Core Dependencies
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+numpy>=1.24.0
+pyautogui>=0.9.54
+
+# Voice Recognition
+SpeechRecognition>=3.10.0
+pyaudio>=0.2.13
+vosk>=0.3.45
+
+# Additional utilities
+pillow>=10.0.0
+pywin32>=306  # For Windows window detection
+
+# Optional: Better voice recognition
+# openai-whisper>=20230314  # Uncomment for Whisper support
