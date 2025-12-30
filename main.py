@@ -35,8 +35,9 @@ class PresentationToolApp:
         # Initialize components
         self.gesture_detector: Optional[GestureDetector] = None
         self.voice_recognizer: Optional[VoiceRecognizer] = None
+        debounce = self.config.get("debounce_time", 0.5)
         self.controller = PresentationController(
-            debounce_time=self.config.get("debounce_time", 0.5)
+            debounce_time=debounce if debounce is not None else 0.5
         )
         
         # UI state
@@ -65,8 +66,9 @@ class PresentationToolApp:
         # Initialize gesture detector
         if self.mode in [OperationMode.GESTURE_ONLY, OperationMode.HYBRID]:
             try:
+                cam_idx = self.config.get("camera_index", 0)
                 self.gesture_detector = GestureDetector(
-                    camera_index=self.config.get("camera_index", 0)
+                    camera_index=cam_idx if cam_idx is not None else 0
                 )
                 self.gesture_detector.start()
                 print("✓ Gesture detection initialized")
@@ -79,8 +81,9 @@ class PresentationToolApp:
         # Initialize voice recognizer
         if self.mode in [OperationMode.VOICE_ONLY, OperationMode.HYBRID]:
             try:
+                offline = self.config.get("offline_mode", False)
                 self.voice_recognizer = VoiceRecognizer(
-                    offline_mode=self.config.get("offline_mode", False)
+                    offline_mode=offline if offline is not None else False
                 )
                 self.voice_recognizer.start_listening(
                     callback=self._on_voice_command
@@ -104,6 +107,7 @@ class PresentationToolApp:
         print("  H - Hybrid mode (both)")
         print("  C - Run calibration")
         print("  A - Auto-detect application")
+        print("  S - Select application manually")
         print("  P - Pause/Resume")
         print("  ESC - Exit")
         print("-"*60)
@@ -123,6 +127,20 @@ class PresentationToolApp:
             self.last_command = gesture_command
             self.command_source = "gesture"
             self.controller.send_command(gesture_command, source="gesture")
+    
+    def _select_application(self):
+        """Let user manually select application profile"""
+        print("\n" + "="*60)
+        print("SELECT APPLICATION PROFILE")
+        print("="*60)
+        print("1. PowerPoint")
+        print("2. Google Slides")
+        print("3. PDF Viewer")
+        print("4. Canva")
+        print("5. Universal (works with any app)")
+        print("A. Auto-detect")
+        print("="*60)
+        print("Press number key (1-5) or A...")
     
     def _update_fps(self):
         """Update FPS counter"""
@@ -230,7 +248,7 @@ class PresentationToolApp:
                 if self.gesture_detector and not self.paused:
                     success, frame = self.gesture_detector.read_frame()
                     
-                    if success:
+                    if success and frame is not None:
                         # Detect gesture
                         gesture_command, annotated_frame = self.gesture_detector.detect_gesture(
                             frame, 
@@ -276,8 +294,25 @@ class PresentationToolApp:
                     print("\nRunning calibration...")
                     CalibrationWizard.run_calibration()
                 elif key == ord('a') or key == ord('A'):
-                    print("\nDetecting application...")
+                    print("\nAuto-detecting application...")
                     self.controller.auto_detect_application()
+                elif key == ord('s') or key == ord('S'):
+                    self._select_application()
+                elif key == ord('1'):
+                    self.controller.set_application("powerpoint")
+                    print("\nSet to PowerPoint mode")
+                elif key == ord('2'):
+                    self.controller.set_application("google_slides")
+                    print("\nSet to Google Slides mode")
+                elif key == ord('3'):
+                    self.controller.set_application("pdf_viewer")
+                    print("\nSet to PDF Viewer mode")
+                elif key == ord('4'):
+                    self.controller.set_application("canva")
+                    print("\nSet to Canva mode")
+                elif key == ord('5'):
+                    self.controller.set_application("universal")
+                    print("\nSet to Universal mode")
                 
         except KeyboardInterrupt:
             print("\nInterrupted by user")

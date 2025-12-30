@@ -12,6 +12,7 @@ vosk>=0.3.45
 # Additional utilities
 pillow>=10.0.0
 pywin32>=306  # For Windows window detection
+psutil>=5.9.0  # For process detection
 
 # Optional: Better voice recognition
 # openai-whisper>=20230314  # Uncomment for Whisper support

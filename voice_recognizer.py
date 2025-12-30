@@ -25,7 +25,6 @@ class VoiceRecognizer:
         self.recognizer.energy_threshold = VOICE_CONFIG.get("energy_threshold", 4000)
         self.recognizer.dynamic_energy_threshold = VOICE_CONFIG.get("dynamic_energy", True)
         self.recognizer.pause_threshold = VOICE_CONFIG.get("pause_threshold", 0.8)
-        self.recognizer.phrase_time_limit = VOICE_CONFIG.get("phrase_timeout", 2)
         
         # Command queue
         self.command_queue = queue.Queue()
@@ -141,10 +140,10 @@ class VoiceRecognizer:
             # Try Indonesian first, then English
             text = None
             try:
-                text = self.recognizer.recognize_google(audio, language="id-ID")
+                text = self.recognizer.recognize_google(audio, language="id-ID")  # type: ignore
             except:
                 try:
-                    text = self.recognizer.recognize_google(audio, language="en-US")
+                    text = self.recognizer.recognize_google(audio, language="en-US")  # type: ignore
                 except:
                     pass
             

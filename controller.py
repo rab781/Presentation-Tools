@@ -149,26 +149,61 @@ class PresentationController:
     def detect_active_application(self) -> str:
         """Detect currently active presentation application"""
         try:
-            import win32gui
+            import win32gui  # type: ignore
+            import win32process
+            import psutil
             
-            # Get active window title
+            # Get active window
             window = win32gui.GetForegroundWindow()
+            if window == 0:
+                print("No active window detected")
+                return "universal"
+            
+            # Get window title
             window_title = win32gui.GetWindowText(window).lower()
             
-            # Match to known applications
-            if "powerpoint" in window_title or "pptx" in window_title:
-                return "powerpoint"
-            elif "google slides" in window_title or "presentation" in window_title:
-                return "google_slides"
-            elif "pdf" in window_title or "adobe" in window_title or "acrobat" in window_title:
-                return "pdf_viewer"
+            # Get process name
+            try:
+                _, process_id = win32process.GetWindowThreadProcessId(window)
+                process = psutil.Process(process_id)
+                process_name = process.name().lower()
+            except Exception:
+                process_name = ""
+            
+            print(f"Active window: '{window_title}'")
+            print(f"Process: '{process_name}'")
+            
+            # Match to known applications by process name first (more reliable)
+            if "powerpnt.exe" in process_name or "powerpnt" in process_name:
+                detected = "powerpoint"
+            elif "chrome.exe" in process_name or "msedge.exe" in process_name or "firefox.exe" in process_name:
+                # Browser - check title for specific apps
+                if "google slides" in window_title or "presentation" in window_title:
+                    detected = "google_slides"
+                elif "canva" in window_title:
+                    detected = "canva"
+                else:
+                    detected = "universal"
+            elif "acrord" in process_name or "acrobat" in process_name or "foxitreader" in process_name:
+                detected = "pdf_viewer"
+            # Fallback to window title matching
+            elif "powerpoint" in window_title or "pptx" in window_title or ".ppt" in window_title:
+                detected = "powerpoint"
+            elif "google slides" in window_title:
+                detected = "google_slides"
+            elif "pdf" in window_title or "adobe" in window_title:
+                detected = "pdf_viewer"
             elif "canva" in window_title:
-                return "canva"
+                detected = "canva"
             else:
-                return "universal"
+                detected = "universal"
+            
+            print(f"Detected application profile: {detected}")
+            return detected
         
-        except ImportError:
-            print("Warning: pywin32 not installed. Using universal profile.")
+        except ImportError as e:
+            print(f"Warning: Required module not installed ({e}). Using universal profile.")
+            print("Install with: pip install psutil pywin32")
             return "universal"
         except Exception as e:
             print(f"Error detecting application: {e}")
