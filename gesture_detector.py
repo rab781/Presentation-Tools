@@ -14,8 +14,9 @@ from config import GESTURE_CONFIG, GESTURE_COMMANDS
 class GestureDetector:
     """Simple gesture detector using basic computer vision"""
     
-    def __init__(self, camera_index=0):
+    def __init__(self, camera_index=0, processing_scale=0.5):
         self.camera_index = camera_index
+        self.processing_scale = processing_scale
         self.cap = None
         
         # Gesture tracking
@@ -55,16 +56,22 @@ class GestureDetector:
         Returns: (gesture_command, annotated_frame)
         """
         frame = cv2.flip(frame, 1)
+        height, width = frame.shape[:2]
+
+        # Resize for processing if needed
+        proc_w = int(width * self.processing_scale)
+        proc_h = int(height * self.processing_scale)
         
         # Convert to grayscale for motion detection
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray = cv2.GaussianBlur(gray, (21, 21), 0)
+        gray_small = cv2.resize(gray, (proc_w, proc_h))
+        gray_small = cv2.GaussianBlur(gray_small, (21, 21), 0)
         
         gesture_command = None
         
         if self.prev_frame is not None:
             # Compute difference
-            frame_delta = cv2.absdiff(self.prev_frame, gray)
+            frame_delta = cv2.absdiff(self.prev_frame, gray_small)
             thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
             thresh = cv2.dilate(thresh, None, iterations=2)
             
@@ -75,12 +82,19 @@ class GestureDetector:
                 # Find largest contour
                 largest_contour = max(contours, key=cv2.contourArea)
                 
-                if cv2.contourArea(largest_contour) > 5000:  # Minimum area threshold
+                # Scale threshold: 5000 is for 640x480.
+                min_area = 5000 * (self.processing_scale ** 2)
+
+                if cv2.contourArea(largest_contour) > min_area:  # Minimum area threshold
                     # Get center of motion
                     M = cv2.moments(largest_contour)
                     if M["m00"] != 0:
-                        cx = int(M["m10"] / M["m00"])
-                        cy = int(M["m01"] / M["m00"])
+                        cx_small = int(M["m10"] / M["m00"])
+                        cy_small = int(M["m01"] / M["m00"])
+
+                        # Scale back to original coordinates
+                        cx = int(cx_small / self.processing_scale)
+                        cy = int(cy_small / self.processing_scale)
                         
                         # Detect swipe gestures based on movement
                         if self.prev_center is not None:
@@ -102,9 +116,12 @@ class GestureDetector:
                         # Draw visualization
                         if draw_landmarks:
                             cv2.circle(frame, (cx, cy), 10, (0, 255, 0), -1)
-                            cv2.drawContours(frame, [largest_contour], -1, (0, 255, 0), 2)
+                            # Scale contour for drawing
+                            scaled_contour = largest_contour * (1.0 / self.processing_scale)
+                            scaled_contour = scaled_contour.astype(np.int32)
+                            cv2.drawContours(frame, [scaled_contour], -1, (0, 255, 0), 2)
         
-        self.prev_frame = gray
+        self.prev_frame = gray_small
         
         # Add instructions overlay
         cv2.putText(frame, "Swipe Left/Right to Navigate", (10, 30),
