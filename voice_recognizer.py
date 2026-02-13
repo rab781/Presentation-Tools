@@ -93,33 +93,44 @@ class VoiceRecognizer:
         """Main listening loop (runs in background thread)"""
         while self.is_listening:
             try:
+                # Optimize: Open microphone stream once and reuse it
+                # This avoids the overhead of opening/closing the audio device on every loop iteration
                 with self.microphone as source:
-                    # Listen for audio
-                    audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
-                
-                # Recognize speech
-                command = self._recognize_speech(audio)
-                
-                if command:
-                    # Map to action
-                    action = self._map_command_to_action(command)
-                    if action:
-                        # Add to queue
-                        self.command_queue.put(action)
+                    while self.is_listening:
+                        try:
+                            # Listen for audio
+                            audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
                         
-                        # Call callback if provided
-                        if self.command_callback:
-                            self.command_callback(action)
+                            # Recognize speech
+                            command = self._recognize_speech(audio)
+
+                            if command:
+                                # Map to action
+                                action = self._map_command_to_action(command)
+                                if action:
+                                    # Add to queue
+                                    self.command_queue.put(action)
+
+                                    # Call callback if provided
+                                    if self.command_callback:
+                                        self.command_callback(action)
+
+                                    print(f"Voice command detected: '{command}' -> {action}")
                         
-                        print(f"Voice command detected: '{command}' -> {action}")
+                        except sr.WaitTimeoutError:
+                            # No speech detected, continue
+                            continue
+                        except Exception as e:
+                            # If an error occurs inside the loop (e.g. buffer overflow),
+                            # break to the outer loop to re-initialize the stream
+                            if self.is_listening:
+                                print(f"Error in voice recognition loop: {e}")
+                            break
             
-            except sr.WaitTimeoutError:
-                # No speech detected, continue
-                continue
             except Exception as e:
                 if self.is_listening:
-                    print(f"Error in voice recognition: {e}")
-                time.sleep(0.1)
+                    print(f"Error initializing microphone: {e}")
+                time.sleep(1)
     
     def _recognize_speech(self, audio) -> Optional[str]:
         """Recognize speech from audio data"""
