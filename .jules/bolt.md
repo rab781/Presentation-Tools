@@ -1,0 +1,3 @@
+## 2024-05-23 - Voice Recognition Loop Optimization
+**Learning:** Initializing the `Microphone` context manager inside a `while` loop (unoptimized) causes significant overhead by repeatedly opening and closing the audio stream on every iteration, even for simple timeouts.
+**Action:** Use a nested loop structure: an outer loop handles stream initialization and error recovery, while an inner loop handles continuous listening (`recognizer.listen`). Catch `WaitTimeoutError` in the inner loop to continue listening without exiting the context. Catch other exceptions to break the inner loop and allow the outer loop to re-initialize the stream safely. This reduces CPU usage and latency.
