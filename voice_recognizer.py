@@ -94,28 +94,35 @@ class VoiceRecognizer:
         while self.is_listening:
             try:
                 with self.microphone as source:
-                    # Listen for audio
-                    audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
-                
-                # Recognize speech
-                command = self._recognize_speech(audio)
-                
-                if command:
-                    # Map to action
-                    action = self._map_command_to_action(command)
-                    if action:
-                        # Add to queue
-                        self.command_queue.put(action)
+                    # Inner loop keeps stream open to avoid expensive re-initialization
+                    while self.is_listening:
+                        try:
+                            # Listen for audio
+                            audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
                         
-                        # Call callback if provided
-                        if self.command_callback:
-                            self.command_callback(action)
+                            # Recognize speech
+                            command = self._recognize_speech(audio)
+
+                            if command:
+                                # Map to action
+                                action = self._map_command_to_action(command)
+                                if action:
+                                    # Add to queue
+                                    self.command_queue.put(action)
+
+                                    # Call callback if provided
+                                    if self.command_callback:
+                                        self.command_callback(action)
+
+                                    print(f"Voice command detected: '{command}' -> {action}")
                         
-                        print(f"Voice command detected: '{command}' -> {action}")
-            
-            except sr.WaitTimeoutError:
-                # No speech detected, continue
-                continue
+                        except sr.WaitTimeoutError:
+                            # No speech detected, continue keeping stream open
+                            continue
+                        except Exception as inner_e:
+                            # Break inner loop to re-initialize stream on critical errors
+                            raise inner_e
+
             except Exception as e:
                 if self.is_listening:
                     print(f"Error in voice recognition: {e}")
