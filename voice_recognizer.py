@@ -91,34 +91,49 @@ class VoiceRecognizer:
     
     def _listen_loop(self):
         """Main listening loop (runs in background thread)"""
+        # Outer loop to handle stream initialization and error recovery
         while self.is_listening:
             try:
+                # ⚡ OPTIMIZATION: Keep the microphone context open
+                # By keeping the stream open continuously, we avoid the overhead of
+                # repeatedly entering and exiting the context manager on every timeout
+                # or successfully recognized phrase, which reduces system calls and CPU load.
                 with self.microphone as source:
-                    # Listen for audio
-                    audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
-                
-                # Recognize speech
-                command = self._recognize_speech(audio)
-                
-                if command:
-                    # Map to action
-                    action = self._map_command_to_action(command)
-                    if action:
-                        # Add to queue
-                        self.command_queue.put(action)
-                        
-                        # Call callback if provided
-                        if self.command_callback:
-                            self.command_callback(action)
-                        
-                        print(f"Voice command detected: '{command}' -> {action}")
-            
-            except sr.WaitTimeoutError:
-                # No speech detected, continue
-                continue
+                    # Inner loop for continuous listening
+                    while self.is_listening:
+                        try:
+                            # Listen for audio
+                            audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
+
+                            # Recognize speech
+                            command = self._recognize_speech(audio)
+
+                            if command:
+                                # Map to action
+                                action = self._map_command_to_action(command)
+                                if action:
+                                    # Add to queue
+                                    self.command_queue.put(action)
+
+                                    # Call callback if provided
+                                    if self.command_callback:
+                                        self.command_callback(action)
+
+                                    print(f"Voice command detected: '{command}' -> {action}")
+
+                        except sr.WaitTimeoutError:
+                            # No speech detected, continue listening on the same open stream
+                            continue
+                        except Exception as e:
+                            # For any other error (like a disconnected microphone),
+                            # break the inner loop to allow the context manager to exit,
+                            # so the outer loop can re-initialize the stream.
+                            if self.is_listening:
+                                print(f"Error in voice recognition stream: {e}")
+                            break # Break inner loop to re-enter context
             except Exception as e:
                 if self.is_listening:
-                    print(f"Error in voice recognition: {e}")
+                    print(f"Error initializing voice recognition: {e}")
                 time.sleep(0.1)
     
     def _recognize_speech(self, audio) -> Optional[str]:
