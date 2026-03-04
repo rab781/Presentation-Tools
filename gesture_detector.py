@@ -123,12 +123,6 @@ class GestureDetector:
         
         self.prev_frame = gray_small
         
-        # Add instructions overlay
-        cv2.putText(frame, "Swipe Left/Right to Navigate", (10, 30),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        cv2.putText(frame, "Move your hand across the camera", (10, 60),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
-        
         return gesture_command, frame
     
     def _validate_gesture(self, gesture: str) -> bool:
