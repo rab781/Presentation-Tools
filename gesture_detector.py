@@ -76,7 +76,8 @@ class GestureDetector:
             thresh = cv2.dilate(thresh, None, iterations=2)
             
             # Find contours
-            contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            # ⚡ OPTIMIZATION: OpenCV 4+ does not modify the source image, making .copy() redundant.
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
             if contours:
                 # Find largest contour
@@ -122,12 +123,6 @@ class GestureDetector:
                             cv2.drawContours(frame, [scaled_contour], -1, (0, 255, 0), 2)
         
         self.prev_frame = gray_small
-        
-        # Add instructions overlay
-        cv2.putText(frame, "Swipe Left/Right to Navigate", (10, 30),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        cv2.putText(frame, "Move your hand across the camera", (10, 60),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
         
         return gesture_command, frame
     

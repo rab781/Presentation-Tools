@@ -91,12 +91,15 @@ class VoiceRecognizer:
     
     def _listen_loop(self):
         """Main listening loop (runs in background thread)"""
-        # Outer loop to initialize/re-initialize the microphone context
+        # Outer loop to handle stream initialization and error recovery
         while self.is_listening:
             try:
-                # Keep microphone open across periods of silence
+                # ⚡ OPTIMIZATION: Keep the microphone context open
+                # By keeping the stream open continuously, we avoid the overhead of
+                # repeatedly entering and exiting the context manager on every timeout
+                # or successfully recognized phrase, which reduces system calls and CPU load.
                 with self.microphone as source:
-                    # Inner loop to continuously listen without closing the stream
+                    # Inner loop for continuous listening
                     while self.is_listening:
                         try:
                             # Listen for audio
@@ -117,17 +120,20 @@ class VoiceRecognizer:
                                         self.command_callback(action)
 
                                     print(f"Voice command detected: '{command}' -> {action}")
-                        
-                        except sr.WaitTimeoutError:
-                            # No speech detected, continue inner loop
-                            continue
-                        except Exception as inner_e:
-                            # Break inner loop to re-initialize stream on critical error
-                            raise inner_e
 
+                        except sr.WaitTimeoutError:
+                            # No speech detected, continue listening on the same open stream
+                            continue
+                        except Exception as e:
+                            # For any other error (like a disconnected microphone),
+                            # break the inner loop to allow the context manager to exit,
+                            # so the outer loop can re-initialize the stream.
+                            if self.is_listening:
+                                print(f"Error in voice recognition stream: {e}")
+                            break # Break inner loop to re-enter context
             except Exception as e:
                 if self.is_listening:
-                    print(f"Error in voice recognition: {e}")
+                    print(f"Error initializing voice recognition: {e}")
                 time.sleep(0.1)
     
     def _recognize_speech(self, audio) -> Optional[str]:
