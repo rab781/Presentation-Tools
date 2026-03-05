@@ -76,7 +76,8 @@ class GestureDetector:
             thresh = cv2.dilate(thresh, None, iterations=2)
             
             # Find contours
-            contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            # ⚡ OPTIMIZATION: OpenCV 4+ does not modify the source image, making .copy() redundant.
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
             if contours:
                 # Find largest contour

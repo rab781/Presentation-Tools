@@ -127,5 +127,23 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify circle NOT called (contour ignored)
         self.assertFalse(mock_cv2.circle.called, "Should verify contour area threshold")
 
+    def test_find_contours_no_copy(self):
+        detector = GestureDetector(processing_scale=0.5)
+        frame = MagicMock()
+        frame.shape = (480, 640, 3)
+
+        # Call 1: Set prev_frame
+        detector.detect_gesture(frame, draw_landmarks=False)
+
+        # Call 2: Trigger findContours logic
+        mock_thresh = MagicMock()
+        # cv2.dilate returns the thresh variable passed to findContours
+        mock_cv2.dilate.return_value = mock_thresh
+
+        detector.detect_gesture(frame, draw_landmarks=False)
+
+        # Verify copy was NOT called on thresh
+        self.assertFalse(mock_thresh.copy.called, "Should not call .copy() on thresh before findContours")
+
 if __name__ == '__main__':
     unittest.main()
