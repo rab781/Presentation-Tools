@@ -142,7 +142,8 @@ class PresentationController:
             elif command == "pause":
                 frequency = 600
             
-            winsound.Beep(frequency, duration)
+            # Run in a separate thread so it doesn't block the main loop
+            threading.Thread(target=winsound.Beep, args=(frequency, duration), daemon=True).start()
         except Exception:
             pass  # Sound not critical
     
