@@ -12,3 +12,6 @@
 ## 2025-05-16 - [Redundant array copy in OpenCV 4+ findContours]
 **Learning:** `cv2.findContours` in OpenCV 4 and newer no longer modifies the source image. Using `.copy()` on the input image is redundant and wastes CPU cycles and memory allocations per frame.
 **Action:** Remove `.copy()` calls when passing thresholded images to `cv2.findContours` to improve frame processing speed and reduce garbage collection overhead.
+## 2025-05-18 - [Non-blocking audio commands]
+**Learning:** The `PresentationController._play_sound_effect` method in `controller.py` used `winsound.Beep`, which is synchronous and blocks the thread for the duration of the beep (100ms). This blocked the main control loop and impacted application responsiveness when executing commands.
+**Action:** Run synchronous sound operations like `winsound.Beep` asynchronously in a background thread using `threading.Thread(target=winsound.Beep, args=(frequency, duration), daemon=True).start()` to eliminate blocking behavior.
