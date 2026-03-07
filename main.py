@@ -158,11 +158,16 @@ class PresentationToolApp:
             return frame
         
         h, w = frame.shape[:2]
-        overlay = frame.copy()
         
-        # Semi-transparent background for text
-        cv2.rectangle(overlay, (0, 0), (w, 120), (0, 0, 0), -1)
-        frame = cv2.addWeighted(overlay, 0.6, frame, 0.4, 0)
+        # ⚡ OPTIMIZATION: Instead of copying the entire frame and blending
+        # the whole image, we only extract the Region of Interest (ROI) for
+        # the top banner (120 pixels) and blend just that section.
+        # This prevents an expensive memory allocation (frame.copy()) and
+        # reduces the area processed by cv2.addWeighted, saving CPU cycles and
+        # reducing garbage collection overhead per frame.
+        # Expected Impact: Eliminates one full frame allocation and reduces blending computations by ~75% (for 480p).
+        roi = frame[0:120, 0:w]
+        frame[0:120, 0:w] = cv2.addWeighted(roi, 0.4, roi, 0, 0)
         
         # Title
         cv2.putText(frame, "Presentation Controller", (10, 30),
