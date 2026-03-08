@@ -15,3 +15,7 @@
 ## 2025-05-18 - [Non-blocking audio commands]
 **Learning:** The `PresentationController._play_sound_effect` method in `controller.py` used `winsound.Beep`, which is synchronous and blocks the thread for the duration of the beep (100ms). This blocked the main control loop and impacted application responsiveness when executing commands.
 **Action:** Run synchronous sound operations like `winsound.Beep` asynchronously in a background thread using `threading.Thread(target=winsound.Beep, args=(frequency, duration), daemon=True).start()` to eliminate blocking behavior.
+
+## 2025-10-24 - [Avoid Full Frame Allocation in OpenCV Video Loops]
+**Learning:** Using `cv2.addWeighted` and `frame.copy()` on the entire frame for small UI overlays incurs significant unnecessary memory allocation and CPU overhead, especially when done in the main hot loop.
+**Action:** Target only the specific Region of Interest (ROI) using NumPy array slicing (e.g., `roi = frame[0:120, 0:w]`), process that slice, and use `dst=roi` in OpenCV functions to avoid full-frame allocations.

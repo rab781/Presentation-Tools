@@ -158,11 +158,15 @@ class PresentationToolApp:
             return frame
         
         h, w = frame.shape[:2]
-        overlay = frame.copy()
         
-        # Semi-transparent background for text
-        cv2.rectangle(overlay, (0, 0), (w, 120), (0, 0, 0), -1)
-        frame = cv2.addWeighted(overlay, 0.6, frame, 0.4, 0)
+        # ⚡ OPTIMIZATION: Instead of copying the full frame and using addWeighted on the entire image,
+        # we target only the Region of Interest (ROI) with array slicing.
+        # This avoids a full-frame memory allocation and reduces CPU cycles.
+        roi_h = min(120, h)
+        if roi_h > 0:
+            roi = frame[0:roi_h, 0:w]
+            black_rect = np.zeros_like(roi)
+            cv2.addWeighted(black_rect, 0.6, roi, 0.4, 0, dst=roi)
         
         # Title
         cv2.putText(frame, "Presentation Controller", (10, 30),
