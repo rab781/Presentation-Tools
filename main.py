@@ -162,12 +162,13 @@ class PresentationToolApp:
         # ⚡ OPTIMIZATION: Instead of copying the entire frame and blending
         # the whole image, we only extract the Region of Interest (ROI) for
         # the top banner (120 pixels) and blend just that section.
-        # This prevents an expensive memory allocation (frame.copy()) and
-        # reduces the area processed by cv2.addWeighted, saving CPU cycles and
+        # Furthermore, by using the dst parameter (dst=roi), we perform the
+        # blending in-place. This prevents the temporary array allocation that
+        # addWeighted normally creates for the output, saving CPU cycles and
         # reducing garbage collection overhead per frame.
-        # Expected Impact: Eliminates one full frame allocation and reduces blending computations by ~75% (for 480p).
+        # Expected Impact: Eliminates full frame allocation and the temporary output array allocation, speeding up frame processing.
         roi = frame[0:120, 0:w]
-        frame[0:120, 0:w] = cv2.addWeighted(roi, 0.4, roi, 0, 0)
+        cv2.addWeighted(roi, 0.4, roi, 0, 0, dst=roi)
         
         # Title
         cv2.putText(frame, "Presentation Controller", (10, 30),
