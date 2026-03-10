@@ -166,8 +166,10 @@ class PresentationToolApp:
         # reduces the area processed by cv2.addWeighted, saving CPU cycles and
         # reducing garbage collection overhead per frame.
         # Expected Impact: Eliminates one full frame allocation and reduces blending computations by ~75% (for 480p).
+        # We also pass dst=roi to cv2.addWeighted to perform the blend in-place,
+        # avoiding an additional array allocation for the result.
         roi = frame[0:120, 0:w]
-        frame[0:120, 0:w] = cv2.addWeighted(roi, 0.4, roi, 0, 0)
+        cv2.addWeighted(roi, 0.4, roi, 0, 0, dst=roi)
         
         # Title
         cv2.putText(frame, "Presentation Controller", (10, 30),
