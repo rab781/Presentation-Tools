@@ -52,8 +52,8 @@ except ImportError:
         # Return empty contours
         return [], None
 
-    def mock_flip(src, flipCode):
-        return src
+    def mock_flip(src, flipCode, dst=None):
+        return src if dst is None else dst
 
     def mock_putText(img, text, org, fontFace, fontScale, color, thickness):
         pass
