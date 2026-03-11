@@ -167,7 +167,12 @@ class PresentationToolApp:
         # reducing garbage collection overhead per frame.
         # Expected Impact: Eliminates one full frame allocation and reduces blending computations by ~75% (for 480p).
         roi = frame[0:120, 0:w]
-        frame[0:120, 0:w] = cv2.addWeighted(roi, 0.4, roi, 0, 0)
+        # ⚡ OPTIMIZATION: In-place alpha blending
+        # By passing `dst=roi` to cv2.addWeighted, we perform the blending operation
+        # directly in the memory of the original frame's slice if possible, avoiding
+        # an intermediate array allocation. We assign the result back to the frame slice
+        # to ensure the UI updates correctly even if OpenCV falls back to out-of-place execution.
+        frame[0:120, 0:w] = cv2.addWeighted(roi, 0.4, roi, 0, 0, dst=roi)
         
         # Title
         cv2.putText(frame, "Presentation Controller", (10, 30),
