@@ -15,3 +15,7 @@
 ## 2025-05-18 - [Non-blocking audio commands]
 **Learning:** The `PresentationController._play_sound_effect` method in `controller.py` used `winsound.Beep`, which is synchronous and blocks the thread for the duration of the beep (100ms). This blocked the main control loop and impacted application responsiveness when executing commands.
 **Action:** Run synchronous sound operations like `winsound.Beep` asynchronously in a background thread using `threading.Thread(target=winsound.Beep, args=(frequency, duration), daemon=True).start()` to eliminate blocking behavior.
+
+## 2025-05-18 - [In-place array operations with OpenCV dst parameter]
+**Learning:** OpenCV operations like `cv2.flip` and `cv2.addWeighted` allocate new arrays by default, but can perform operations in-place by passing the `dst` parameter. This prevents expensive full-frame memory allocations and reduces garbage collection overhead per frame.
+**Action:** Always use the `dst` parameter (e.g., `dst=frame` or `dst=roi`) for OpenCV functions when the input array can be safely mutated in-place.

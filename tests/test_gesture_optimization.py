@@ -31,7 +31,7 @@ class TestGestureOptimization(unittest.TestCase):
         mock_cv2.reset_mock()
         mock_np.reset_mock()
         # Configure flip to return input frame (identity)
-        mock_cv2.flip.side_effect = lambda x, y: x
+        mock_cv2.flip.side_effect = lambda src, flipCode, dst=None: dst if dst is not None else src
 
     def test_initialization_defaults(self):
         detector = GestureDetector()
