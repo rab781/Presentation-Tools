@@ -21,6 +21,20 @@ class VoiceRecognizer:
         self.microphone = sr.Microphone()
         self.offline_mode = offline_mode
         
+        # Pre-compute command mappings for O(1) exact match and O(K) substring search
+        self.command_map = {}
+        self.all_keywords = []
+        for action, keywords in VOICE_COMMANDS.items():
+            for keyword in keywords:
+                if keyword not in self.command_map:
+                    self.command_map[keyword] = action
+                if keyword not in self.all_keywords:
+                    self.all_keywords.append(keyword)
+
+        # Sort keywords by length descending so longer/specific commands
+        # (e.g., 'lanjutkan') are matched before substrings (e.g., 'lanjut')
+        self.all_keywords.sort(key=len, reverse=True)
+
         # Setup recognizer parameters
         self.recognizer.energy_threshold = VOICE_CONFIG.get("energy_threshold", 4000)
         self.recognizer.dynamic_energy_threshold = VOICE_CONFIG.get("dynamic_energy", True)
@@ -212,11 +226,16 @@ class VoiceRecognizer:
         
         text = text.lower().strip()
         
-        # Check each command category
-        for action, keywords in VOICE_COMMANDS.items():
-            for keyword in keywords:
-                if keyword in text:
-                    return action
+        # ⚡ OPTIMIZATION: O(1) exact match lookup
+        if text in self.command_map:
+            return self.command_map[text]
+
+        # ⚡ OPTIMIZATION: O(K) substring search where K is total keywords,
+        # ordered by length descending to match more specific keywords first
+        # (e.g. 'lanjutkan' before 'lanjut')
+        for keyword in self.all_keywords:
+            if keyword in text:
+                return self.command_map[keyword]
         
         return None
     
