@@ -19,3 +19,6 @@
 ## 2025-05-18 - [In-place array operations with OpenCV dst parameter]
 **Learning:** OpenCV operations like `cv2.flip` and `cv2.addWeighted` allocate new arrays by default, but can perform operations in-place by passing the `dst` parameter. This prevents expensive full-frame memory allocations and reduces garbage collection overhead per frame.
 **Action:** Always use the `dst` parameter (e.g., `dst=frame` or `dst=roi`) for OpenCV functions when the input array can be safely mutated in-place.
+## 2025-05-18 - [O(1) dictionary lookup instead of O(N) looping]
+**Learning:** In `voice_recognizer.py`, `_map_command_to_action` previously iterated over the entire `VOICE_COMMANDS` dictionary values for every text evaluation. This is highly inefficient. Pre-computing a `command_map` dictionary and a list of `all_keywords` sorted by length descending during `__init__` enables an $O(1)$ exact match and $O(K)$ substring search, ensuring faster processing and correct prioritization of overlapping keywords (e.g., 'lanjutkan' vs 'lanjut').
+**Action:** Avoid looping over dictionary values for reverse lookups. Pre-compute mappings and sort substrings by length descending to optimize text command mapping performance and guarantee correct keyword precedence.
