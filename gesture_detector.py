@@ -72,8 +72,12 @@ class GestureDetector:
         if self.prev_frame is not None:
             # Compute difference
             frame_delta = cv2.absdiff(self.prev_frame, gray_small)
-            thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
-            thresh = cv2.dilate(thresh, None, iterations=2)
+            # ⚡ OPTIMIZATION: In-place array operations
+            # By passing `dst=frame_delta` to cv2.threshold and `dst=thresh` to cv2.dilate,
+            # we reuse existing memory buffers instead of allocating new arrays. This reduces
+            # expensive memory allocations per frame and lowers garbage collection overhead.
+            thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY, dst=frame_delta)[1]
+            thresh = cv2.dilate(thresh, None, iterations=2, dst=thresh)
             
             # Find contours
             # ⚡ OPTIMIZATION: OpenCV 4+ does not modify the source image, making .copy() redundant.

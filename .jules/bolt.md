@@ -22,3 +22,11 @@
 ## 2025-05-18 - [O(1) dictionary lookup instead of O(N) looping]
 **Learning:** In `voice_recognizer.py`, `_map_command_to_action` previously iterated over the entire `VOICE_COMMANDS` dictionary values for every text evaluation. This is highly inefficient. Pre-computing a `command_map` dictionary and a list of `all_keywords` sorted by length descending during `__init__` enables an $O(1)$ exact match and $O(K)$ substring search, ensuring faster processing and correct prioritization of overlapping keywords (e.g., 'lanjutkan' vs 'lanjut').
 **Action:** Avoid looping over dictionary values for reverse lookups. Pre-compute mappings and sort substrings by length descending to optimize text command mapping performance and guarantee correct keyword precedence.
+
+## 2025-12-18 - [Avoid in-place array operations that mutate caller arrays]
+**Learning:** In-place mutations of caller-provided arrays (e.g., `cv2.flip(frame, 1, dst=frame)`) are dangerous and can cause side-effects where the caller expects the original array structure.
+**Action:** Do not use the `dst` parameter for OpenCV functions that mutate arrays passed by the caller.
+
+## 2025-12-18 - [In-place array operations with OpenCV dst parameter inside functions]
+**Learning:** We can use the `dst` parameter in operations that create intermediate representations such as `cv2.threshold` and `cv2.dilate`.
+**Action:** We will use `dst=frame_delta` in `cv2.threshold` and `dst=thresh` in `cv2.dilate` to perform these operations in place.
