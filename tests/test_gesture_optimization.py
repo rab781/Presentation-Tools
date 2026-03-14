@@ -145,5 +145,33 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify copy was NOT called on thresh
         self.assertFalse(mock_thresh.copy.called, "Should not call .copy() on thresh before findContours")
 
+    def test_inplace_threshold_and_dilate(self):
+        detector = GestureDetector(processing_scale=0.5)
+        frame = MagicMock()
+        frame.shape = (480, 640, 3)
+
+        # First call to initialize prev_frame
+        detector.detect_gesture(frame, draw_landmarks=False)
+
+        # Reset mocks to track the second call cleanly
+        mock_cv2.threshold.reset_mock()
+        mock_cv2.dilate.reset_mock()
+        mock_cv2.absdiff.reset_mock()
+
+        # Second call to trigger difference computation
+        detector.detect_gesture(frame, draw_landmarks=False)
+
+        # Verify absdiff was called
+        self.assertTrue(mock_cv2.absdiff.called, "absdiff should be called to compute frame difference")
+
+        # Get the return value of absdiff, which is frame_delta
+        frame_delta = mock_cv2.absdiff.return_value
+
+        # Verify threshold was called with dst=frame_delta
+        mock_cv2.threshold.assert_called_with(frame_delta, 25, 255, mock_cv2.THRESH_BINARY, dst=frame_delta)
+
+        # Verify dilate was called with dst=frame_delta
+        mock_cv2.dilate.assert_called_with(frame_delta, None, iterations=2, dst=frame_delta)
+
 if __name__ == '__main__':
     unittest.main()
