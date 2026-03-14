@@ -44,9 +44,13 @@ except ImportError:
         time.sleep(src1.size * 1e-7)
         return src1
 
-    def mock_threshold(src, thresh, maxval, type):
+    def mock_threshold(src, thresh, maxval, type, dst=None):
         time.sleep(src.size * 1e-7)
-        return (0, src)
+        return (0, src if dst is None else dst)
+
+    def mock_dilate(src, kernel, iterations=1, dst=None):
+        time.sleep(src.size * 1e-7)
+        return src if dst is None else dst
 
     def mock_findContours(image, mode, method):
         # Return empty contours
@@ -69,6 +73,7 @@ except ImportError:
     mock_cv2.GaussianBlur.side_effect = mock_GaussianBlur
     mock_cv2.absdiff.side_effect = mock_absdiff
     mock_cv2.threshold.side_effect = mock_threshold
+    mock_cv2.dilate.side_effect = mock_dilate
     mock_cv2.findContours.side_effect = mock_findContours
     mock_cv2.flip.side_effect = mock_flip
     mock_cv2.putText.side_effect = mock_putText
