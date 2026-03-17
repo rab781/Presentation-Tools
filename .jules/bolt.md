@@ -30,3 +30,7 @@
 ## 2025-12-18 - [In-place array operations with OpenCV dst parameter inside functions]
 **Learning:** We can use the `dst` parameter in operations that create intermediate representations such as `cv2.threshold` and `cv2.dilate`.
 **Action:** We will use `dst=frame_delta` in `cv2.threshold` and `dst=thresh` in `cv2.dilate` to perform these operations in place.
+
+## 2025-12-18 - [In-place array operations with OpenCV dst parameter inside cv2.GaussianBlur]
+**Learning:** `cv2.GaussianBlur` allocates a new array by default, but can perform operations in-place by passing the `dst` parameter. This reduces expensive full-frame memory allocations and reduces garbage collection overhead per frame.
+**Action:** Always use the `dst` parameter (e.g., `dst=gray_small`) for OpenCV functions when the input array can be safely mutated in-place such as in `cv2.GaussianBlur(gray_small, (21, 21), 0, dst=gray_small)`.

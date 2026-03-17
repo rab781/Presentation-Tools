@@ -65,7 +65,10 @@ class GestureDetector:
         # Convert to grayscale for motion detection
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray_small = cv2.resize(gray, (proc_w, proc_h))
-        gray_small = cv2.GaussianBlur(gray_small, (21, 21), 0)
+        # ⚡ OPTIMIZATION: In-place array operations
+        # By passing `dst=gray_small` to cv2.GaussianBlur, we perform the blur directly
+        # in the memory of the `gray_small` array, avoiding an intermediate array allocation.
+        gray_small = cv2.GaussianBlur(gray_small, (21, 21), 0, dst=gray_small)
         
         gesture_command = None
         
