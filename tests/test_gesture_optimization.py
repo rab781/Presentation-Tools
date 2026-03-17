@@ -4,6 +4,11 @@ from unittest.mock import MagicMock, patch
 import os
 
 # Mock modules before import
+# To ensure test isolation, we remove modules from sys.modules
+for mod in ["cv2", "numpy", "gesture_detector", "config", "controller"]:
+    if mod in sys.modules:
+        del sys.modules[mod]
+
 mock_cv2 = MagicMock()
 sys.modules["cv2"] = mock_cv2
 mock_np = MagicMock()
@@ -50,6 +55,18 @@ class TestGestureOptimization(unittest.TestCase):
         mock_cv2.cvtColor.return_value = MagicMock()
         mock_cv2.resize.return_value = MagicMock()
 
+        # Mock resize so that it returns an object with shape, then GaussianBlur uses that
+        mock_resized_gray = MagicMock()
+        mock_resized_gray.shape = (240, 320)
+
+        # Gaussian blur should return the mocked resized gray to ensure shape persists
+        mock_cv2.GaussianBlur.return_value = mock_resized_gray
+
+        # We need resize to return a mock but it should let us check its arguments.
+        mock_cv2.resize.return_value = mock_resized_gray
+        mock_cv2.findContours.return_value = ([], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
+
         # Call detect_gesture
         detector.detect_gesture(frame, draw_landmarks=False)
 
@@ -63,14 +80,22 @@ class TestGestureOptimization(unittest.TestCase):
         frame = MagicMock()
         frame.shape = (480, 640, 3)
 
+        # Mock resize so that it returns an object with shape, then GaussianBlur uses that
+        mock_resized_gray = MagicMock()
+        mock_resized_gray.shape = (240, 320)
+        mock_cv2.resize.return_value = mock_resized_gray
+        mock_cv2.GaussianBlur.return_value = mock_resized_gray
+
         # First call to initialize prev_frame
-        mock_cv2.resize.return_value = MagicMock() # gray_small
+        mock_cv2.threshold.return_value = (None, MagicMock())
         detector.detect_gesture(frame, draw_landmarks=False)
 
         # Second call to trigger logic
         # Mock finding contours
         contour = MagicMock()
         mock_cv2.findContours.return_value = ([contour], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
+        mock_cv2.dilate.return_value = MagicMock()
 
         # Threshold: 5000 * 0.5^2 = 1250.
         # Let's return area 2000 (should pass)
@@ -110,12 +135,22 @@ class TestGestureOptimization(unittest.TestCase):
         frame = MagicMock()
         frame.shape = (480, 640, 3)
 
+        # Mock resize so that it returns an object with shape, then GaussianBlur uses that
+        mock_resized_gray = MagicMock()
+        mock_resized_gray.shape = (240, 320)
+        mock_cv2.resize.return_value = mock_resized_gray
+        mock_cv2.GaussianBlur.return_value = mock_resized_gray
+
         # First call
+        mock_cv2.findContours.return_value = ([], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
         detector.detect_gesture(frame)
 
         # Second call
         contour = MagicMock()
         mock_cv2.findContours.return_value = ([contour], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
+        mock_cv2.dilate.return_value = MagicMock()
 
         # Threshold: 5000 * 0.5^2 = 1250.
         # Return area 1000 (should be ignored)
@@ -132,13 +167,23 @@ class TestGestureOptimization(unittest.TestCase):
         frame = MagicMock()
         frame.shape = (480, 640, 3)
 
+        # Mock resize so that it returns an object with shape, then GaussianBlur uses that
+        mock_resized_gray = MagicMock()
+        mock_resized_gray.shape = (240, 320)
+        mock_cv2.resize.return_value = mock_resized_gray
+        mock_cv2.GaussianBlur.return_value = mock_resized_gray
+
         # Call 1: Set prev_frame
+        mock_cv2.findContours.return_value = ([], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
         detector.detect_gesture(frame, draw_landmarks=False)
 
         # Call 2: Trigger findContours logic
         mock_thresh = MagicMock()
         # cv2.dilate returns the thresh variable passed to findContours
         mock_cv2.dilate.return_value = mock_thresh
+        mock_cv2.findContours.return_value = ([], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
 
         detector.detect_gesture(frame, draw_landmarks=False)
 
@@ -150,13 +195,24 @@ class TestGestureOptimization(unittest.TestCase):
         frame = MagicMock()
         frame.shape = (480, 640, 3)
 
+        # Mock resize so that it returns an object with shape, then GaussianBlur uses that
+        mock_resized_gray = MagicMock()
+        mock_resized_gray.shape = (240, 320)
+        mock_cv2.resize.return_value = mock_resized_gray
+        mock_cv2.GaussianBlur.return_value = mock_resized_gray
+
         # First call to initialize prev_frame
+        mock_cv2.findContours.return_value = ([], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
         detector.detect_gesture(frame, draw_landmarks=False)
 
         # Reset mocks to track the second call cleanly
         mock_cv2.threshold.reset_mock()
         mock_cv2.dilate.reset_mock()
         mock_cv2.absdiff.reset_mock()
+        mock_cv2.findContours.return_value = ([], None)
+        mock_cv2.threshold.return_value = (None, MagicMock())
+        mock_cv2.dilate.return_value = MagicMock()
 
         # Second call to trigger difference computation
         detector.detect_gesture(frame, draw_landmarks=False)
@@ -170,8 +226,10 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify threshold was called with dst=frame_delta
         mock_cv2.threshold.assert_called_with(frame_delta, 25, 255, mock_cv2.THRESH_BINARY, dst=frame_delta)
 
-        # Verify dilate was called with dst=frame_delta
-        mock_cv2.dilate.assert_called_with(frame_delta, None, iterations=2, dst=frame_delta)
+        # Verify dilate was called with dst=thresh
+        # thresh is the return value of threshold, which is mock_cv2.threshold.return_value[1]
+        thresh = mock_cv2.threshold.return_value[1]
+        mock_cv2.dilate.assert_called_with(thresh, None, iterations=2, dst=thresh)
 
 if __name__ == '__main__':
     unittest.main()

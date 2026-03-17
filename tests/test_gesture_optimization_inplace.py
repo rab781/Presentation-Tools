@@ -43,7 +43,15 @@ class TestGestureOptimizationInplace(unittest.TestCase):
         frame = MagicMock()
         frame.shape = (480, 640, 3) # Height, Width, Channels
 
+        # Mock resize so that it returns an object with shape, then GaussianBlur uses that
+        mock_resized_gray = MagicMock()
+        mock_resized_gray.shape = (240, 320)
+        mock_cv2.resize.return_value = mock_resized_gray
+        mock_cv2.GaussianBlur.return_value = mock_resized_gray
+
         # Call 1: Set prev_frame
+        mock_cv2.threshold.return_value = (None, MagicMock())
+        mock_cv2.findContours.return_value = ([], None)
         detector.detect_gesture(frame, draw_landmarks=False)
 
         # Call 2: Trigger logic
