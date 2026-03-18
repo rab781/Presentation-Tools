@@ -34,3 +34,7 @@
 ## 2025-12-18 - [In-place array operations with OpenCV dst parameter inside cv2.GaussianBlur]
 **Learning:** `cv2.GaussianBlur` allocates a new array by default, but can perform operations in-place by passing the `dst` parameter. This reduces expensive full-frame memory allocations and reduces garbage collection overhead per frame.
 **Action:** Always use the `dst` parameter (e.g., `dst=gray_small`) for OpenCV functions when the input array can be safely mutated in-place such as in `cv2.GaussianBlur(gray_small, (21, 21), 0, dst=gray_small)`.
+
+## 2025-12-18 - [In-place array operations with OpenCV absdiff]
+**Learning:** `cv2.absdiff` allocates a new array by default, but can perform operations in-place by passing the `dst` parameter. When computing frame differences (e.g., `frame_delta = cv2.absdiff(self.prev_frame, gray_small)`), the old frame buffer is often no longer needed and can be repurposed as the destination array (`dst=self.prev_frame`). This reduces expensive memory allocations per frame and lowers garbage collection overhead.
+**Action:** Use the `dst` parameter (e.g., `dst=self.prev_frame`) for `cv2.absdiff` when the input array can be safely overwritten.
