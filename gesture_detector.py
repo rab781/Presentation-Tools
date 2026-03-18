@@ -77,7 +77,14 @@ class GestureDetector:
             # ⚡ OPTIMIZATION: In-place array operations
             # We no longer need the old prev_frame, so we can use it as the destination
             # array for the absdiff result, avoiding a new array allocation per frame.
-            frame_delta = cv2.absdiff(self.prev_frame, gray_small, dst=self.prev_frame)
+            try:
+                frame_delta = cv2.absdiff(self.prev_frame, gray_small, dst=self.prev_frame)
+            except TypeError:
+                # Fallback for mocks/local implementations of cv2.absdiff that do not
+                # accept the `dst` keyword argument (e.g., simple two-arg mocks).
+                frame_delta = cv2.absdiff(self.prev_frame, gray_small)
+                # We lose the in-place optimization here, but preserve behavior.
+                self.prev_frame = frame_delta
             # ⚡ OPTIMIZATION: In-place array operations
             # By passing `dst=frame_delta` to cv2.threshold and `dst=thresh` to cv2.dilate,
             # we reuse existing memory buffers instead of allocating new arrays. This reduces
