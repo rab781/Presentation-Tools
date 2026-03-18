@@ -50,7 +50,7 @@ class TestAbsdiffOptimization(unittest.TestCase):
         self.assertTrue(mock_cv2.absdiff.called)
         kwargs = mock_cv2.absdiff.call_args[1]
         self.assertIn('dst', kwargs, "cv2.absdiff should be called with 'dst' parameter for in-place optimization")
-        self.assertEqual(kwargs['dst'], prev_frame_mock, "dst should be self.prev_frame to reuse the old frame buffer")
+        self.assertIs(kwargs['dst'], prev_frame_mock, "dst should be self.prev_frame to reuse the old frame buffer")
 
 if __name__ == '__main__':
     unittest.main()
