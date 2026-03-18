@@ -74,7 +74,10 @@ class GestureDetector:
         
         if self.prev_frame is not None:
             # Compute difference
-            frame_delta = cv2.absdiff(self.prev_frame, gray_small)
+            # ⚡ OPTIMIZATION: In-place array operations
+            # We no longer need the old prev_frame, so we can use it as the destination
+            # array for the absdiff result, avoiding a new array allocation per frame.
+            frame_delta = cv2.absdiff(self.prev_frame, gray_small, dst=self.prev_frame)
             # ⚡ OPTIMIZATION: In-place array operations
             # By passing `dst=frame_delta` to cv2.threshold and `dst=thresh` to cv2.dilate,
             # we reuse existing memory buffers instead of allocating new arrays. This reduces
