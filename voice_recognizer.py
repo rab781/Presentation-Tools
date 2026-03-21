@@ -9,8 +9,15 @@ import threading
 import queue
 import time
 import os
+import json
 from typing import Optional, Callable
 from config import VOICE_COMMANDS, VOICE_CONFIG
+
+try:
+    from vosk import Model, KaldiRecognizer
+    HAS_VOSK = True
+except ImportError:
+    HAS_VOSK = False
 
 
 class VoiceRecognizer:
@@ -70,19 +77,19 @@ class VoiceRecognizer:
     
     def _load_vosk_model(self):
         """Load Vosk model for offline recognition"""
-        try:
-            from vosk import Model
-            model_path = VOICE_CONFIG.get("vosk_model_path", "./models/vosk-model-small-id-0.22")
-            
-            if os.path.exists(model_path):
-                self.vosk_model = Model(model_path)
-                print(f"Vosk model loaded from {model_path}")
-            else:
-                print(f"Warning: Vosk model not found at {model_path}")
-                print("Download from: https://alphacephei.com/vosk/models")
-                self.offline_mode = False
-        except ImportError:
+        if not HAS_VOSK:
             print("Warning: Vosk not installed. Install with: pip install vosk")
+            self.offline_mode = False
+            return
+
+        model_path = VOICE_CONFIG.get("vosk_model_path", "./models/vosk-model-small-id-0.22")
+
+        if os.path.exists(model_path):
+            self.vosk_model = Model(model_path)
+            print(f"Vosk model loaded from {model_path}")
+        else:
+            print(f"Warning: Vosk model not found at {model_path}")
+            print("Download from: https://alphacephei.com/vosk/models")
             self.offline_mode = False
     
     def start_listening(self, callback: Optional[Callable] = None):
@@ -191,10 +198,10 @@ class VoiceRecognizer:
     
     def _recognize_with_vosk(self, audio) -> Optional[str]:
         """Recognize speech using Vosk (offline)"""
-        try:
-            from vosk import KaldiRecognizer
-            import json
+        if not HAS_VOSK or not self.vosk_model:
+            return None
             
+        try:
             # Convert audio to proper format
             raw_data = audio.get_raw_data(convert_rate=16000, convert_width=2)
             
