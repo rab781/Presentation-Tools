@@ -15,8 +15,10 @@ try:
     import win32process
     import psutil
     HAS_WIN32 = True
-except ImportError:
+    WIN32_IMPORT_ERROR = None
+except ImportError as e:
     HAS_WIN32 = False
+    WIN32_IMPORT_ERROR = e
 
 
 # Disable PyAutoGUI failsafe for better UX
