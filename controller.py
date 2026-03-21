@@ -10,6 +10,14 @@ import queue
 from typing import Optional, Dict
 from config import APP_PROFILES
 
+try:
+    import win32gui  # type: ignore
+    import win32process
+    import psutil
+    HAS_WIN32 = True
+except ImportError:
+    HAS_WIN32 = False
+
 
 # Disable PyAutoGUI failsafe for better UX
 pyautogui.FAILSAFE = False
@@ -149,11 +157,12 @@ class PresentationController:
     
     def detect_active_application(self) -> str:
         """Detect currently active presentation application"""
-        try:
-            import win32gui  # type: ignore
-            import win32process
-            import psutil
+        if not HAS_WIN32:
+            print("Warning: Required module not installed. Using universal profile.")
+            print("Install with: pip install psutil pywin32")
+            return "universal"
             
+        try:
             # Get active window
             window = win32gui.GetForegroundWindow()
             if window == 0:
@@ -201,11 +210,7 @@ class PresentationController:
             
             print(f"Detected application profile: {detected}")
             return detected
-        
-        except ImportError as e:
-            print(f"Warning: Required module not installed ({e}). Using universal profile.")
-            print("Install with: pip install psutil pywin32")
-            return "universal"
+
         except Exception as e:
             print(f"Error detecting application: {e}")
             return "universal"
