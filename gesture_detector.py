@@ -63,8 +63,31 @@ class GestureDetector:
         proc_h = int(height * self.processing_scale)
         
         # Convert to grayscale for motion detection
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray_small = cv2.resize(gray, (proc_w, proc_h))
+        # ⚡ OPTIMIZATION: Pre-allocate buffer for cvtColor
+        # cv2.cvtColor allocates a new array by default. By passing a pre-allocated
+        # buffer to the `dst` parameter, we avoid an expensive memory allocation
+        # (640x480 bytes) per frame, reducing garbage collection overhead.
+        if not hasattr(self, 'gray_buffer') or self.gray_buffer.shape[:2] != (height, width):
+            self.gray_buffer = np.empty((height, width), dtype=np.uint8)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY, dst=self.gray_buffer)
+
+        # ⚡ OPTIMIZATION: Double-buffering for resize to avoid per-frame allocation
+        # We use a double-buffering scheme because `self.prev_frame` (from the previous loop)
+        # must be preserved for motion detection via `cv2.absdiff`, which then mutates it in-place.
+        if not hasattr(self, 'gray_small_buffers'):
+            self.gray_small_buffers = [None, None]
+            self.buffer_idx = 0
+
+        curr_buffer = self.gray_small_buffers[self.buffer_idx]
+        if curr_buffer is None or curr_buffer.shape[:2] != (proc_h, proc_w):
+            curr_buffer = np.empty((proc_h, proc_w), dtype=np.uint8)
+            self.gray_small_buffers[self.buffer_idx] = curr_buffer
+
+        gray_small = cv2.resize(gray, (proc_w, proc_h), dst=curr_buffer)
+
+        # Swap buffer index for the next frame
+        self.buffer_idx = 1 - self.buffer_idx
+
         # ⚡ OPTIMIZATION: In-place array operations
         # By passing `dst=gray_small` to cv2.GaussianBlur, we perform the blur directly
         # in the memory of the `gray_small` array, avoiding an intermediate array allocation.

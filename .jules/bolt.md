@@ -38,3 +38,7 @@
 ## 2025-12-18 - [In-place array operations with OpenCV absdiff]
 **Learning:** `cv2.absdiff` allocates a new array by default, but can perform operations in-place by passing the `dst` parameter. When computing frame differences (e.g., `frame_delta = cv2.absdiff(self.prev_frame, gray_small)`), the old frame buffer is often no longer needed and can be repurposed as the destination array (`dst=self.prev_frame`). This reduces expensive memory allocations per frame and lowers garbage collection overhead.
 **Action:** Use the `dst` parameter (e.g., `dst=self.prev_frame`) for `cv2.absdiff` when the input array can be safely overwritten.
+
+## 2025-12-19 - [Double-buffering to prevent allocation in OpenCV operations]
+**Learning:** `cv2.resize` and `cv2.cvtColor` allocate new arrays by default. While they accept the `dst` parameter in Python, using `dst` for functions generating sequential frame data (like `cv2.resize` acting as `prev_frame`) can inadvertently corrupt motion detection history if the buffer is overwritten in the next iteration before comparison.
+**Action:** Use a double-buffering array scheme (e.g. `buffers[0]` and `buffers[1]`) alongside the `dst` parameter to prevent array allocations inside hot-loops while safely preserving previous state for `cv2.absdiff` and similar operations.
