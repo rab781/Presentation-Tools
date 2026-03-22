@@ -84,26 +84,56 @@ class TestAllocationOptimization(unittest.TestCase):
     def test_double_buffering_preserves_motion_detection(self):
         detector = GestureDetector(processing_scale=0.5)
 
+        # Create multiple frames of the same size to exercise the buffering logic
         frame1 = MagicMock()
         frame1.shape = (480, 640, 3)
 
         frame2 = MagicMock()
         frame2.shape = (480, 640, 3)
 
-        # First frame initializes the buffer
+        frame3 = MagicMock()
+        frame3.shape = (480, 640, 3)
+
+        frame4 = MagicMock()
+        frame4.shape = (480, 640, 3)
+
+        # Process several frames to allow the implementation to alternate buffers
         detector.detect_gesture(frame1, draw_landmarks=False)
-
-        # Second frame uses the other buffer and performs absdiff
         detector.detect_gesture(frame2, draw_landmarks=False)
+        detector.detect_gesture(frame3, draw_landmarks=False)
+        detector.detect_gesture(frame4, draw_landmarks=False)
 
-        # Check that absdiff was called correctly
-        self.assertTrue(mock_cv2.absdiff.called, "cv2.absdiff was not called on the second frame")
+        # Check that absdiff was called (motion comparison is performed)
+        self.assertTrue(mock_cv2.absdiff.called, "cv2.absdiff was not called for motion detection")
 
-        # Verify double buffering ensures prev_frame is not pointing to the same array as current frame_small
-        prev_frame_ref = mock_cv2.absdiff.call_args[0][0]
-        curr_frame_ref = mock_cv2.absdiff.call_args[0][1]
-        self.assertIsNot(prev_frame_ref, curr_frame_ref, "Double buffering failed: prev_frame and curr_frame point to the same array!")
+        # Extract the dst buffers used for resize across all calls
+        resize_calls = mock_cv2.resize.call_args_list
+        self.assertGreaterEqual(len(resize_calls), 3, "Expected cv2.resize to be called at least 3 times for double buffering validation")
 
+        dst_buffers = []
+        for _, kwargs in resize_calls:
+            self.assertIn("dst", kwargs, "cv2.resize should use 'dst' parameter to avoid memory allocation")
+            dst_buffers.append(kwargs["dst"])
 
+        # There should be exactly two buffers that are reused
+        unique_buffers = set(dst_buffers)
+        self.assertEqual(
+            len(unique_buffers),
+            2,
+            f"Expected exactly 2 dst buffers for double buffering, got {len(unique_buffers)}",
+        )
+
+        # Verify that the buffers alternate: A, B, A, B, ...
+        for i in range(2, len(dst_buffers)):
+            self.assertIs(
+                dst_buffers[i],
+                dst_buffers[i - 2],
+                "Double buffering failed: dst buffer at position {i} does not match buffer two steps earlier",
+            )
+            self.assertIsNot(
+                dst_buffers[i],
+                dst_buffers[i - 1],
+                "Double buffering failed: consecutive dst buffers should be different",
+            )
 if __name__ == '__main__':
     unittest.main()
