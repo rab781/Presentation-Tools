@@ -36,11 +36,11 @@ except ImportError:
         time.sleep(m.size * 1e-7)
         return m
 
-    def mock_GaussianBlur(src, ksize, sigmaX):
+    def mock_GaussianBlur(src, ksize, sigmaX, dst=None):
         time.sleep(src.size * 5e-7) # Blur is expensive
         return src
 
-    def mock_absdiff(src1, src2):
+    def mock_absdiff(src1, src2, dst=None):
         time.sleep(src1.size * 1e-7)
         return src1
 

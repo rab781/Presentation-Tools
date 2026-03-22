@@ -73,7 +73,8 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify resize call
         # Expected size: width=320 (640*0.5), height=240 (480*0.5)
         # Note: cv2.resize takes (width, height)
-        mock_cv2.resize.assert_called_with(mock_cv2.cvtColor.return_value, (320, 240))
+        self.assertEqual(mock_cv2.resize.call_args[0][0], mock_cv2.cvtColor.return_value)
+        self.assertEqual(mock_cv2.resize.call_args[0][1], (320, 240))
 
     def test_coordinate_scaling(self):
         detector = GestureDetector(processing_scale=0.5)
