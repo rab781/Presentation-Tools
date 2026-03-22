@@ -31,8 +31,18 @@ mock_cv2.absdiff.side_effect = lambda src1, src2, dst=None: dst if dst is not No
 mock_cv2.threshold.return_value = (0, MagicMock())
 mock_cv2.dilate.side_effect = lambda src, kernel, iterations=1, dst=None: dst if dst is not None else src
 mock_cv2.findContours.return_value = ([], None)
-mock_np.empty.side_effect = lambda shape, dtype=None: MagicMock()
 
+def _mock_np_empty(shape, dtype=None):
+    """Return a MagicMock that mimics a NumPy array with the requested shape.
+
+    This allows GestureDetector.detect_gesture() to inspect buffer.shape
+    and decide whether to reuse or reallocate buffers during tests.
+    """
+    arr = MagicMock()
+    arr.shape = shape
+    return arr
+
+mock_np.empty.side_effect = _mock_np_empty
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
