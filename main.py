@@ -281,9 +281,16 @@ class PresentationToolApp:
                 else:
                     # Voice-only mode or paused - just show status window
                     if self.show_ui:
-                        # Create blank frame with status
-                        status_frame = np.zeros((200, 640, 3), dtype=np.uint8)
-                        status_frame = self._draw_ui(status_frame)
+                        # ⚡ OPTIMIZATION: Cache static status frame instead of allocating zeros every tick
+                        # Creating a new (200, 640, 3) zero array every iteration causes significant
+                        # garbage collection overhead when paused or in voice-only mode.
+                        # By caching a pre-allocated static frame, we eliminate per-frame allocations.
+                        if not hasattr(self, 'cached_status_frame') or self.cached_status_frame.shape != (200, 640, 3):
+                            self.cached_status_frame = np.zeros((200, 640, 3), dtype=np.uint8)
+                        else:
+                            self.cached_status_frame.fill(0)
+
+                        status_frame = self._draw_ui(self.cached_status_frame)
                         cv2.imshow(UI_CONFIG["window_name"], status_frame)
                 
                 # Handle keyboard input
