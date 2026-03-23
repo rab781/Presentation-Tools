@@ -1,334 +1,150 @@
 # Presentation Control Tool
 
-Alat kontrol presentasi menggunakan **gerakan tangan** dan **perintah suara** untuk mengontrol slide PowerPoint, Google Slides, Canva, PDF, dan aplikasi presentasi lainnya.
+> Control your presentations hands-free using computer vision and voice commands.
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-green)
-![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10%2B-orange)
+[![Python version](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## ✨ Fitur
+## Why This Exists
 
-- 🖐️ **Deteksi Gerakan Tangan** - Gunakan gerakan tangan untuk navigasi slide
-- 🎤 **Perintah Suara** - Kontrol presentasi dengan suara (Indonesia & English)
-- 🔄 **3 Mode Operasi** - Gesture only, Voice only, atau Hybrid
-- 🎯 **Auto-detect Aplikasi** - Otomatis menyesuaikan dengan aplikasi presentasi
-- 📱 **Universal Compatibility** - Bekerja dengan PowerPoint, Google Slides, Canva, PDF
-- 🌐 **Online & Offline** - Dukungan voice recognition online (Google) dan offline (Vosk)
-- 🎨 **Visual Feedback** - UI overlay menampilkan status real-time
-- 🔊 **Sound Effects** - Audio feedback untuk setiap command (opsional)
+Being tied to a keyboard or carrying a clicker interrupts the flow of a good presentation. You need a way to navigate slides naturally while speaking and moving around the stage. This tool uses your webcam and microphone to let you control PowerPoint, Google Slides, and other presentation software using intuitive hand gestures and voice commands.
 
-## 🎮 Gesture yang Didukung
+## Quick Start
 
-| Gesture | Command | Aksi |
-|---------|---------|------|
-| 👉 Swipe Kanan | Next | Slide berikutnya |
-| 👈 Swipe Kiri | Previous | Slide sebelumnya |
-| ✋ Open Palm | Pause | Pause/Blackout |
-| ✊ Closed Fist | Play | Resume |
-| 👍 Thumbs Up | First | Slide pertama |
-| 👎 Thumbs Down | Last | Slide terakhir |
-| ✌️ Peace Sign | Blackout | Layar hitam |
+The fastest way to get started is by cloning the repository and running the application:
 
-## 🗣️ Perintah Suara
-
-### Bahasa Indonesia
-- **Navigasi**: "lanjut", "berikutnya", "kembali", "sebelumnya", "pertama", "terakhir"
-- **Kontrol**: "berhenti", "jeda", "lanjutkan", "mulai", "keluar"
-
-### English
-- **Navigation**: "next", "previous", "back", "first", "last", "start", "end"
-- **Control**: "pause", "stop", "play", "resume", "exit", "quit"
-
-## 📋 Requirements
-
-- Python 3.8 atau lebih tinggi
-- Webcam
-- Microphone (untuk voice control)
-- Windows 10/11 (Linux/Mac juga didukung dengan modifikasi)
-
-## 🚀 Instalasi
-
-### 1. Clone Repository
-
-```powershell
+```bash
 git clone https://github.com/rab781/Presentation-Tools.git
 cd Presentation-Tools
-```
-
-### 2. Buat Virtual Environment (Opsional tapi Direkomendasikan)
-
-```powershell
 python -m venv venv
+
+# Windows
 .\venv\Scripts\Activate.ps1
-```
+# Linux/macOS
+# source venv/bin/activate
 
-### 3. Install Dependencies
-
-#### Instalasi Standar
-```powershell
 pip install -r requirements.txt
-```
-
-#### ⚠️ Instalasi PyAudio di Windows
-
-PyAudio sering bermasalah saat instalasi di Windows. Gunakan salah satu metode berikut:
-
-**Metode 1: Menggunakan pipwin**
-```powershell
-pip install pipwin
-pipwin install pyaudio
-```
-
-**Metode 2: Download Pre-built Wheel**
-1. Download dari [Unofficial Windows Binaries](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio)
-2. Pilih sesuai Python version dan architecture (contoh: `PyAudio-0.2.13-cp311-cp311-win_amd64.whl` untuk Python 3.11 64-bit)
-3. Install:
-```powershell
-pip install PyAudio-0.2.13-cp311-cp311-win_amd64.whl
-```
-
-**Metode 3: Install Microsoft C++ Build Tools**
-1. Download [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-2. Install dengan komponen "Desktop development with C++"
-3. Restart dan coba install ulang PyAudio
-
-### 4. Download Vosk Model untuk Offline Voice Recognition (Opsional)
-
-Untuk mode offline, download model bahasa Indonesia:
-
-```powershell
-# Buat folder models
-mkdir models
-cd models
-
-# Download model (pilih salah satu)
-# Small model (~50MB) - Recommended
-Invoke-WebRequest -Uri "https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip" -OutFile "vosk-model-small-id-0.22.zip"
-
-# Extract
-Expand-Archive -Path "vosk-model-small-id-0.22.zip" -DestinationPath "."
-
-cd ..
-```
-
-Model lain tersedia di: https://alphacephei.com/vosk/models
-
-## 🎯 Cara Penggunaan
-
-### Quick Start
-
-```powershell
 python main.py
 ```
 
-### Mode Operasi
+## Installation
 
-Saat aplikasi berjalan, tekan tombol berikut untuk switch mode:
+**Prerequisites**: Python 3.8+ and a working webcam/microphone. Windows 10/11 is recommended.
 
-- **G** - Gesture Only (hanya gerakan tangan)
-- **V** - Voice Only (hanya suara)
-- **H** - Hybrid (gesture + voice)
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/rab781/Presentation-Tools.git
+   cd Presentation-Tools
+   ```
 
-### Tombol Kontrol
+2. **Set up a virtual environment:**
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+   ```
 
-| Key | Fungsi |
-|-----|--------|
-| **G** | Switch to Gesture Only mode |
-| **V** | Switch to Voice Only mode |
-| **H** | Switch to Hybrid mode |
-| **C** | Run calibration wizard |
-| **A** | Auto-detect active application |
-| **P** | Pause/Resume detection |
-| **ESC** | Exit application |
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### Calibration
+   > **Note on PyAudio (Windows):** If you encounter errors installing PyAudio, install it using a pre-built wheel from [Unofficial Windows Binaries](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio) matching your Python version, or use `pipwin`:
+   > ```bash
+   > pip install pipwin
+   > pipwin install pyaudio
+   > ```
 
-Sebelum presentasi pertama kali, jalankan calibration:
+4. **(Optional) Offline Voice Recognition:**
+   If you want to use voice commands without an internet connection, download the Vosk model for your language (e.g., [Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip)) and extract it into a `models/` directory in the project root. Update `config.py` to enable offline mode.
 
-```powershell
-python main.py --calibrate
+## Usage
+
+Start the main application to begin controlling your presentation:
+
+```bash
+python main.py
 ```
 
-Calibration wizard akan:
-- Test camera
-- Test microphone
-- Test keyboard control
-- Detect aplikasi presentasi
-- Memberikan rekomendasi setup
+### Basic Modes
 
-## 🖥️ Supported Applications
+The tool supports three operational modes. You switch between them while the application is running using these hotkeys:
 
-| Application | Auto-detect | Shortcuts | Status |
-|-------------|-------------|-----------|--------|
-| PowerPoint | ✅ | ✅ | Fully supported |
-| Google Slides | ✅ | ✅ | Fully supported |
-| PDF Viewers | ✅ | ✅ | Supported |
-| Canva | ✅ | ⚠️ | Limited support |
-| Universal | - | ✅ | Fallback mode |
+- **G**: **Gesture Only** - Navigate using only hand movements.
+- **V**: **Voice Only** - Navigate using spoken commands.
+- **H**: **Hybrid** - Navigate using both gestures and voice.
+- **P**: **Pause/Resume** - Temporarily stop detection.
+- **C**: **Calibrate** - Run the setup wizard to test your camera and microphone.
+- **A**: **Auto-detect** - Force the application to detect the currently active presentation software.
+- **ESC**: **Exit** - Close the application.
 
-### Application-Specific Shortcuts
+### Hand Gestures
 
-Tool ini otomatis mendeteksi aplikasi yang sedang aktif dan menggunakan keyboard shortcuts yang sesuai:
+Ensure you are 0.5 to 2 meters away from the camera in a well-lit room.
 
-- **PowerPoint**: F5 (start), Arrow keys, B (blackout)
-- **Google Slides**: Ctrl+F5 (start), Arrow keys, S (speaker notes)
-- **PDF Viewers**: Arrow keys, Page Up/Down
-- **Universal**: Arrow keys, Home, End, ESC
+| Action | Gesture | Description |
+|---|---|---|
+| **Next Slide** | 👉 Swipe Right | Quick horizontal movement to the right |
+| **Previous Slide** | 👈 Swipe Left | Quick horizontal movement to the left |
+| **Pause/Blackout** | ✋ Open Palm | Hold hand open |
+| **Resume** | ✊ Closed Fist | Clench hand into a fist |
+| **First Slide** | 👍 Thumbs Up | Thumb pointing upwards |
+| **Last Slide** | 👎 Thumbs Down | Thumb pointing downwards |
 
-## ⚙️ Konfigurasi
+### Voice Commands
 
-Edit file `config.py` atau buat `user_config.json` untuk customize:
+The tool supports both Indonesian and English commands. Speak clearly towards your microphone.
 
-```json
-{
-  "mode": "hybrid",
-  "gesture_sensitivity": 0.7,
-  "voice_sensitivity": 0.6,
-  "debounce_time": 0.5,
-  "camera_index": 0,
-  "show_ui": true,
-  "sound_effects": true,
-  "offline_mode": false,
-  "language": "both"
-}
-```
+| Action | English Commands | Indonesian Commands |
+|---|---|---|
+| **Next Slide** | "next", "forward" | "lanjut", "berikutnya", "selanjutnya" |
+| **Previous Slide** | "previous", "back" | "kembali", "sebelumnya", "mundur" |
+| **First Slide** | "first", "start" | "pertama", "awal", "mulai" |
+| **Last Slide** | "last", "end" | "terakhir", "akhir" |
+| **Pause** | "pause", "stop" | "berhenti", "jeda" |
+| **Resume** | "play", "resume" | "lanjutkan", "mulai" |
+| **Exit** | "exit", "quit", "close" | "keluar", "tutup" |
 
-### Parameter Konfigurasi
+### Configuration
 
-- **mode**: `"gesture"`, `"voice"`, atau `"hybrid"`
-- **gesture_sensitivity**: 0.0 - 1.0 (tinggi = lebih sensitif)
-- **voice_sensitivity**: 0.0 - 1.0
-- **debounce_time**: Waktu delay antar command (detik)
-- **camera_index**: Index camera (0 = default, 1 = external)
-- **show_ui**: Tampilkan UI overlay
-- **sound_effects**: Aktifkan sound feedback
-- **offline_mode**: Gunakan Vosk untuk offline recognition
-- **language**: `"indonesian"`, `"english"`, atau `"both"`
+You customize the tool's behavior by editing the generated `user_config.json` file or the default `config.py`.
 
-## 🔧 Troubleshooting
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `mode` | `string` | `"hybrid"` | Initial mode: `"gesture"`, `"voice"`, or `"hybrid"`. |
+| `gesture_sensitivity` | `float` | `0.7` | Sensitivity threshold for hand tracking (0.0 to 1.0). |
+| `voice_sensitivity` | `float` | `0.6` | Confidence threshold for voice recognition. |
+| `debounce_time` | `float` | `0.5` | Delay (in seconds) between accepting consecutive commands. |
+| `camera_index` | `int` | `0` | Camera device index (0 for default webcam, 1 for external). |
+| `show_ui` | `boolean` | `true` | Show the camera feed and overlay status. |
+| `sound_effects` | `boolean` | `true` | Play an audio beep when a command is recognized. |
 
-### Camera tidak terdeteksi
-```powershell
-# Test camera dengan OpenCV
-python -c "import cv2; cap = cv2.VideoCapture(0); print('Camera OK' if cap.isOpened() else 'Camera Error')"
-```
+## Supported Applications
 
-### Microphone tidak bekerja
-- Pastikan microphone permission diaktifkan di Windows Settings
-- Test dengan: `python main.py --calibrate`
-- Coba adjust energy threshold di `config.py`
+The tool automatically detects the active application and uses the correct keyboard shortcuts.
 
-### Gesture tidak terdeteksi
-- Pastikan pencahayaan cukup terang
-- Jarak tangan ke camera: 0.5 - 2 meter
-- Tangan harus terlihat penuh oleh camera
-- Gunakan background yang kontras
+- **PowerPoint**: Fully supported (Navigation, Start, Blackout)
+- **Google Slides**: Fully supported (Navigation, Speaker Notes)
+- **PDF Viewers** (Acrobat, Foxit): Navigation supported
+- **Canva**: Navigation supported
+- **Universal Mode**: Uses standard arrow keys as a fallback for unknown applications.
 
-### Voice recognition tidak akurat
-- Kurangi background noise
-- Bicara dengan jelas dan tidak terlalu cepat
-- Untuk offline mode, pastikan Vosk model sudah terinstall
-- Adjust `energy_threshold` di `config.py`
+## Troubleshooting
 
-### Keyboard shortcuts tidak bekerja
-- Pastikan aplikasi presentasi dalam focus (klik window presentasi)
-- Coba manual detect dengan tekan **A**
-- Beberapa aplikasi mungkin perlu admin privileges
-- Test dengan: `controller.test_command("next")`
+- **Camera not detected**: Ensure no other application is using your webcam. Test it directly with OpenCV: `python -c "import cv2; cap = cv2.VideoCapture(0); print('Camera OK' if cap.isOpened() else 'Error')"`.
+- **Commands are triggering twice**: Increase the `debounce_time` in your configuration file.
+- **Voice recognition is missing words**: Run the calibration wizard (`python main.py --calibrate`) to adjust your microphone's energy threshold based on your room's ambient noise.
+- **Application shortcuts aren't working**: Ensure the presentation window (e.g., PowerPoint) has focus. Press 'A' to force the tool to re-detect the active application.
 
-### PyAutoGUI failsafe triggered
-- Jangan gerakkan mouse ke pojok kiri atas terlalu cepat
-- Failsafe sudah disabled di code, tapi bisa re-enable jika perlu
+## Contributing
 
-### High CPU usage
-- Kurangi FPS camera di `gesture_detector.py`
-- Disable UI overlay dengan set `show_ui: false`
-- Gunakan mode voice-only jika gesture tidak diperlukan
+See [CONTRIBUTING.md](CONTRIBUTING.md) (if available). We welcome pull requests for bug fixes and new features.
 
-## 📁 Struktur Project
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -m 'Add your feature'`).
+4. Push the branch (`git push origin feature/your-feature`).
+5. Open a Pull Request.
 
-```
-Presentation-Tools/
-│
-├── main.py                    # Main application
-├── gesture_detector.py        # Hand gesture detection
-├── voice_recognizer.py        # Voice command recognition
-├── controller.py              # Keyboard controller & calibration
-├── config.py                  # Configuration management
-├── requirements.txt           # Python dependencies
-├── README.md                  # Documentation (this file)
-│
-├── models/                    # Vosk models (offline)
-│   └── vosk-model-small-id-0.22/
-│
-└── user_config.json           # User preferences (auto-generated)
-```
+## License
 
-## 🎓 Tips untuk Presentasi
-
-1. **Sebelum Presentasi**
-   - Jalankan calibration wizard
-   - Test semua gestures
-   - Test voice commands
-   - Posisikan camera dengan baik
-   - Check pencahayaan ruangan
-
-2. **Saat Presentasi**
-   - Start aplikasi sebelum buka presentasi
-   - Gunakan mode Hybrid untuk flexibility
-   - Tangan santai, tidak perlu tegang
-   - Bicara dengan jelas untuk voice commands
-   - Gunakan **P** untuk pause jika tidak ingin ada deteksi sementara
-
-3. **Best Practices**
-   - Jangan berdiri terlalu dekat/jauh dari camera
-   - Hindari gerakan tangan yang tidak perlu
-   - Gunakan gesture yang paling nyaman untuk Anda
-   - Practice beberapa kali sebelum presentasi sebenarnya
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🙏 Acknowledgments
-
-- **MediaPipe** by Google for hand tracking
-- **OpenCV** for computer vision
-- **SpeechRecognition** for voice recognition
-- **Vosk** for offline speech recognition
-- **PyAutoGUI** for keyboard automation
-
-## 📧 Support
-
-Jika mengalami masalah atau ada pertanyaan:
-1. Check [Troubleshooting](#-troubleshooting) section
-2. Run calibration wizard: `python main.py --calibrate`
-3. Open an issue di GitHub
-4. Contact: [Your Email/Contact]
-
-## 🚀 Future Features
-
-- [ ] Hand gesture customization
-- [ ] Multiple language support
-- [ ] Remote control via smartphone
-- [ ] Cloud sync untuk settings
-- [ ] Gesture recording dan replay
-- [ ] Integration dengan PowerPoint API
-- [ ] Machine learning untuk custom gestures
-- [ ] Web-based control panel
-
----
-
-**Made with ❤️ for better presentations**
-
-*Happy Presenting! 🎤✨*
+MIT © [rab781](https://github.com/rab781)
