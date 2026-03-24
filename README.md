@@ -53,6 +53,7 @@ Install the required Python packages:
 pip install -r requirements.txt
 ```
 
+> **Note for macOS/Linux users:** The `requirements.txt` file includes `pywin32`, which is a Windows-only package. If `pip` fails when trying to install `pywin32`, you can safely skip that package (it is not required on macOS/Linux) and install the remaining dependencies normally.
 #### ⚠️ Windows PyAudio Installation
 
 If `pip install pyaudio` fails on Windows, use `pipwin` to install the pre-compiled binary:
