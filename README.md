@@ -180,4 +180,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT © [rab781](https://github.com/rab781)
+This project is licensed under the MIT License.
+Copyright (c) 2025 Presentation Control Tool
