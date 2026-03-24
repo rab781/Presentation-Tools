@@ -54,6 +54,9 @@ class PresentationToolApp:
         self.status_message = "Initializing..."
         self.last_command = ""
         self.command_source = ""
+
+        # Pre-allocated status frame for UI to avoid continuous np.zeros calls
+        self.status_frame = np.zeros((200, 640, 3), dtype=np.uint8)
     
     def initialize(self):
         """Initialize all components"""
@@ -281,9 +284,13 @@ class PresentationToolApp:
                 else:
                     # Voice-only mode or paused - just show status window
                     if self.show_ui:
-                        # Create blank frame with status
-                        status_frame = np.zeros((200, 640, 3), dtype=np.uint8)
-                        status_frame = self._draw_ui(status_frame)
+                        # ⚡ OPTIMIZATION: Instead of allocating a new numpy array
+                        # per frame (e.g. np.zeros((200, 640, 3), dtype=np.uint8)),
+                        # we reuse a pre-allocated status frame and just clear it
+                        # in-place using .fill(0). This significantly reduces memory
+                        # allocation overhead and garbage collection in the hot loop.
+                        self.status_frame.fill(0)
+                        status_frame = self._draw_ui(self.status_frame)
                         cv2.imshow(UI_CONFIG["window_name"], status_frame)
                 
                 # Handle keyboard input

@@ -42,3 +42,6 @@
 ## 2025-12-19 - [Double-buffering to prevent allocation in OpenCV operations]
 **Learning:** `cv2.resize` and `cv2.cvtColor` allocate new arrays by default. While they accept the `dst` parameter in Python, using `dst` for functions generating sequential frame data (like `cv2.resize` acting as `prev_frame`) can inadvertently corrupt motion detection history if the buffer is overwritten in the next iteration before comparison.
 **Action:** Use a double-buffering array scheme (e.g. `buffers[0]` and `buffers[1]`) alongside the `dst` parameter to prevent array allocations inside hot-loops while safely preserving previous state for `cv2.absdiff` and similar operations.
+## 2025-12-20 - [Pre-allocate UI status frame]
+**Learning:** In the `main.py` application loop, continuously rendering static or blank UI frames (e.g., in voice-only or paused modes) by creating new NumPy arrays (like `np.zeros()`) causes significant memory allocation overhead.
+**Action:** Optimize this by pre-allocating the canvas once and clearing it in-place using `.fill(0)` before drawing.
