@@ -4,9 +4,10 @@
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-green)
-![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10%2B-orange)
+![MediaPipe (planned)](https://img.shields.io/badge/MediaPipe-planned-lightgrey)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+*Note: MediaPipe integration is planned but not yet part of the current gesture detection implementation, which uses OpenCV only and does not require MediaPipe.*
 ## Why This Exists
 
 Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software (PowerPoint, Google Slides, Canva, or PDF viewers) and lets you navigate slides fluidly without breaking your flow.
