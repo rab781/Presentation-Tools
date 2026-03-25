@@ -1,13 +1,11 @@
 # Presentation Control Tool
 
-> Control your presentations hands-free using hand gestures and voice commands.
+> Turn your webcam and microphone into a universal controller to navigate presentations hands-free.
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-green)
-![MediaPipe (planned)](https://img.shields.io/badge/MediaPipe-planned-lightgrey)
+[![Python version](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
+[![OpenCV version](https://img.shields.io/badge/OpenCV-4.8%2B-green)](https://opencv.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-*Note: MediaPipe integration is planned but not yet part of the current gesture detection implementation, which uses OpenCV only and does not require MediaPipe.*
 ## Why This Exists
 
 Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software (PowerPoint, Google Slides, Canva, or PDF viewers) and lets you navigate slides fluidly without breaking your flow.
@@ -15,18 +13,11 @@ Clickers get lost, batteries die, and holding a device limits your expressivenes
 ## Quick Start
 
 ```bash
-# Clone the repository
 git clone https://github.com/rab781/Presentation-Tools.git
 cd Presentation-Tools
-
-# Install requirements
 pip install -r requirements.txt
-
-# Start the application
 python main.py
 ```
-
-*Note: For Windows users, PyAudio installation can be tricky. See [Installation](#installation) for a reliable method.*
 
 ## Installation
 
@@ -55,14 +46,12 @@ pip install -r requirements.txt
 ```
 
 > **Note for macOS/Linux users:** The `requirements.txt` file includes `pywin32`, which is a Windows-only package. If `pip` fails when trying to install `pywin32`, you can safely skip that package (it is not required on macOS/Linux) and install the remaining dependencies normally.
-#### ⚠️ Windows PyAudio Installation
 
-If `pip install pyaudio` fails on Windows, use `pipwin` to install the pre-compiled binary:
-
-```bash
-pip install pipwin
-pipwin install pyaudio
-```
+> **Note for Windows users:** If `pip install pyaudio` fails, use `pipwin` to install the pre-compiled binary:
+> ```bash
+> pip install pipwin
+> pipwin install pyaudio
+> ```
 
 ### 3. Optional: Offline Voice Recognition
 
@@ -74,67 +63,19 @@ For offline voice commands (Indonesian), download the Vosk model:
 
 ## Usage
 
+### Basic Example
+
 Start the controller by running the main script:
 
 ```bash
 python main.py
 ```
 
-### Basic Example: Controlling a Presentation
-
 1. Open your presentation in PowerPoint or Google Slides.
 2. Run `python main.py`.
 3. Stand 0.5 - 2 meters from your webcam.
 4. **Swipe your hand right** to go to the next slide.
 5. Say **"previous"** (or "sebelumnya") to go back.
-
-### Supported Interactions
-
-#### Hand Gestures
-
-| Gesture | Command | Action |
-|---------|---------|--------|
-| 👉 Swipe Right | Next | Next slide |
-| 👈 Swipe Left | Previous | Previous slide |
-| ✋ Open Palm | Pause | Pause/Blackout |
-| ✊ Closed Fist | Play | Resume |
-| 👍 Thumbs Up | First | First slide |
-| 👎 Thumbs Down | Last | Last slide |
-| ✌️ Peace Sign | Blackout | Black screen |
-
-#### Voice Commands
-
-You can use either English or Indonesian commands.
-
-- **Navigation**: "next", "previous", "back", "first", "last", "start", "end"
-- **Control**: "pause", "stop", "play", "resume", "exit", "quit"
-- **Indonesian**: "lanjut", "berikutnya", "kembali", "sebelumnya", "pertama", "terakhir", "berhenti", "jeda", "lanjutkan", "mulai", "keluar"
-
-### Advanced Usage: Calibration and Application Modes
-
-The tool automatically detects your active application and maps commands to the correct keyboard shortcuts.
-
-#### Keyboard Controls
-
-While the application is running, you can press these keys to control the tool:
-
-| Key | Function |
-|-----|----------|
-| **G** | Switch to Gesture Only mode |
-| **V** | Switch to Voice Only mode |
-| **H** | Switch to Hybrid mode (default) |
-| **C** | Run calibration wizard |
-| **A** | Auto-detect active application manually |
-| **P** | Pause/Resume detection |
-| **ESC** | Exit application |
-
-#### Calibration Wizard
-
-If you are having trouble with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings:
-
-```bash
-python main.py --calibrate
-```
 
 ### Configuration
 
@@ -152,22 +93,22 @@ You can customize the application behavior by creating or editing `user_config.j
 | `offline_mode` | `boolean`| `false` | Use local Vosk model for voice recognition instead of Google. |
 | `language` | `string` | `"both"` | Active language: `"english"`, `"indonesian"`, or `"both"`. |
 
-## API Reference
+### Advanced Usage
 
-The project exposes a configuration manager that can be used programmatically:
+You can run the calibration wizard if you are having trouble with gestures or voice recognition to test your setup and receive recommended settings:
 
-```python
-from config import config_manager, OperationMode
-
-# Get a value
-mode = config_manager.get_mode()
-
-# Set a value (automatically saves to user_config.json)
-config_manager.set_mode(OperationMode.GESTURE_ONLY)
-config_manager.set("debounce_time", 1.0)
+```bash
+python main.py --calibrate
 ```
 
-For more details on internal modules (`gesture_detector`, `voice_recognizer`, `controller`), refer to the source code docstrings.
+## Documentation
+
+See the [docs/](docs/) directory for detailed documentation:
+
+* [Tutorial: Getting Started](docs/tutorial.md)
+* [How-To Guides](docs/how-to.md)
+* [API & Command Reference](docs/reference.md)
+* [Architecture Explanation](docs/explanation.md)
 
 ## Contributing
 
