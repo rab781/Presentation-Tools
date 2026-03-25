@@ -11,6 +11,7 @@ mock_cv2 = MagicMock()
 sys.modules["cv2"] = mock_cv2
 mock_np = MagicMock()
 sys.modules["numpy"] = mock_np
+mock_np.empty_like.side_effect = lambda x: type('MockArray', (), {'shape': x.shape})()
 
 # Setup mock constants
 mock_cv2.COLOR_BGR2GRAY = 6
@@ -19,7 +20,12 @@ mock_cv2.RETR_EXTERNAL = 0
 mock_cv2.CHAIN_APPROX_SIMPLE = 2
 
 # Configure flip
-mock_cv2.flip.side_effect = lambda src, flipCode, dst=None: dst if dst is not None else src
+def mock_flip(src, flipCode, dst=None):
+    if dst is not None:
+        dst.shape = src.shape
+        return dst
+    return src
+mock_cv2.flip.side_effect = mock_flip
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from gesture_detector import GestureDetector

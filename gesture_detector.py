@@ -55,7 +55,15 @@ class GestureDetector:
         Detect simple gestures using motion detection
         Returns: (gesture_command, annotated_frame)
         """
-        frame = cv2.flip(frame, 1)
+        # ⚡ OPTIMIZATION: Pre-allocate buffer for cv2.flip
+        # cv2.flip allocates a new array by default. By passing a pre-allocated
+        # buffer to the `dst` parameter, we avoid an expensive memory allocation
+        # (e.g., 640x480x3 bytes = ~900KB) per frame, reducing garbage collection overhead.
+        # We do not use dst=frame to avoid mutating the caller's array.
+        if not hasattr(self, 'flip_buffer') or self.flip_buffer.shape != frame.shape:
+            self.flip_buffer = np.empty_like(frame)
+        frame = cv2.flip(frame, 1, dst=self.flip_buffer)
+
         height, width = frame.shape[:2]
 
         # Resize for processing if needed
