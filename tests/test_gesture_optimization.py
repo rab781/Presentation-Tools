@@ -13,6 +13,7 @@ mock_cv2 = MagicMock()
 sys.modules["cv2"] = mock_cv2
 mock_np = MagicMock()
 sys.modules["numpy"] = mock_np
+mock_np.empty_like.side_effect = lambda x: type('MockArray', (), {'shape': x.shape})()
 
 # Setup mock constants
 mock_cv2.COLOR_BGR2GRAY = 6
@@ -36,7 +37,12 @@ class TestGestureOptimization(unittest.TestCase):
         mock_cv2.reset_mock()
         mock_np.reset_mock()
         # Configure flip to return input frame (identity)
-        mock_cv2.flip.side_effect = lambda src, flipCode, dst=None: dst if dst is not None else src
+        def mock_flip(src, flipCode, dst=None):
+            if dst is not None:
+                dst.shape = src.shape
+                return dst
+            return src
+        mock_cv2.flip.side_effect = mock_flip
 
     def test_initialization_defaults(self):
         detector = GestureDetector()
