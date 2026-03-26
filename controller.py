@@ -20,6 +20,11 @@ except ImportError as e:
     HAS_WIN32 = False
     WIN32_IMPORT_ERROR = e
 
+try:
+    import winsound
+    HAS_WINSOUND = True
+except ImportError:
+    HAS_WINSOUND = False
 
 # Disable PyAutoGUI failsafe for better UX
 pyautogui.FAILSAFE = False
@@ -139,7 +144,16 @@ class PresentationController:
         """Play sound effect for command (optional)"""
         # Simple beep using system
         # Can be replaced with actual sound files
+
+        # ⚡ OPTIMIZATION: Check for module availability upfront.
+        # Guarding the body with `HAS_WINSOUND` speeds up execution significantly on platforms
+        # where `winsound` is unavailable (e.g. macOS/Linux), preventing repeated ImportError
+        # handling overhead whenever a command executes.
+        if not HAS_WINSOUND:
+            return
+
         try:
+            # Need to get Beep from the module so it works with patches/mocks
             import winsound
             frequency = 1000  # Hz
             duration = 100    # ms
