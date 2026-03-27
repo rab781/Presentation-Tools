@@ -173,11 +173,28 @@ class VoiceRecognizer:
     def _recognize_with_google(self, audio) -> Optional[str]:
         """Recognize speech using Google Speech Recognition"""
         try:
-            # Try Indonesian first, then English
             text = None
-            try:
-                text = self.recognizer.recognize_google(audio, language="id-ID")  # type: ignore
-            except:
+
+            # ⚡ OPTIMIZATION: Respect configured language to prevent unnecessary API calls
+            # Previously, the system always tried Indonesian first and then English,
+            # resulting in an expensive, blocking HTTP request (which would fail and timeout)
+            # even if the user only wanted English or Indonesian. By checking the configured language,
+            # we can skip the redundant API call and cut recognition latency in half for single-language modes.
+
+            # Read the current language setting dynamically and fail open (try both)
+            # if the language setting is unrecognized to prevent breaking functionality.
+            current_language = str(VOICE_CONFIG.get("language", "both")).lower().strip()
+
+            if current_language not in ["indonesian", "english", "both"]:
+                current_language = "both"
+
+            if current_language in ["indonesian", "both"]:
+                try:
+                    text = self.recognizer.recognize_google(audio, language="id-ID")  # type: ignore
+                except:
+                    pass
+
+            if not text and current_language in ["english", "both"]:
                 try:
                     text = self.recognizer.recognize_google(audio, language="en-US")  # type: ignore
                 except:

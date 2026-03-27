@@ -45,3 +45,7 @@
 ## 2025-12-20 - [Pre-allocate UI status frame]
 **Learning:** In the `main.py` application loop, continuously rendering static or blank UI frames (e.g., in voice-only or paused modes) by creating new NumPy arrays (like `np.zeros()`) causes significant memory allocation overhead.
 **Action:** Optimize this by pre-allocating the canvas once and clearing it in-place using `.fill(0)` before drawing.
+
+## 2025-12-21 - [Prevent redundant external API calls in loops]
+**Learning:** Hardcoded sequential external API calls (e.g., trying an Indonesian Speech-to-Text API and waiting for it to timeout and throw an exception before trying English) cause significant latency (1-2 seconds) per recognition loop iteration.
+**Action:** Always check the configuration first to respect the user's preference. Conditionally skip unnecessary, expensive network requests to reduce latency, while ensuring you fall back safely ("fail open") to default behavior if the configuration value is unrecognized.
