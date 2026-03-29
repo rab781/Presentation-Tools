@@ -1,6 +1,10 @@
 ## 2025-12-17 - Voice Recognizer Microphone Context Optimization
 **Learning:** In `voice_recognizer.py`, the `_listen_loop` opens the microphone context manager (`with self.microphone as source:`) continuously inside the `while self.is_listening:` loop. Opening and closing the audio stream on every single timeout iteration (every 1 second when silent) adds unnecessary overhead and latency.
 **Action:** Optimize `_listen_loop` by using an outer loop to manage the microphone context (`with self.microphone as source:`), and an inner loop (`while self.is_listening:`) to continuously listen for audio without closing the stream. Catch `sr.WaitTimeoutError` inside the inner loop to continue listening seamlessly. For other exceptions, break out of the inner loop to re-initialize the microphone context.
+## 2025-12-21 - [Re-initializing Vosk KaldiRecognizer]
+**Learning:** In `voice_recognizer.py`, `_recognize_with_vosk` re-instantiated `KaldiRecognizer(self.vosk_model, 16000)` inside the loop for every frame. This object creation incurs overhead and is unnecessary.
+**Action:** Initialize `KaldiRecognizer` once (e.g., when the model is loaded in `_load_vosk_model`) and cache it as an instance variable (`self.vosk_recognizer`). Then, reuse this instance in the `_recognize_with_vosk` recognition method.
+
 ## 2024-03-03 - [Microphone Stream Initialization Bottleneck]
 **Learning:** `VoiceRecognizer._listen_loop` re-initializes the microphone context (`with self.microphone as source:`) on every iteration. This introduces significant overhead, causing choppy listening, missed words, and excessive system calls, especially when a timeout occurs or speech isn't immediately detected. This is a common pattern that hurts performance in speech recognition loops.
 **Action:** Optimize the `_listen_loop` by keeping the microphone context open continuously. Introduce an inner loop for continuous listening that only breaks and re-initializes the stream on critical errors.

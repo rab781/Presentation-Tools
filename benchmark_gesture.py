@@ -18,14 +18,14 @@ except ImportError:
     sys.modules["cv2"] = mock_cv2
 
     # Setup mock behavior to simulate processing time
-    def mock_resize(src, dsize):
+    def mock_resize(src, dsize, dst=None):
         m = MagicMock()
         m.shape = (dsize[1], dsize[0])
         m.size = dsize[0] * dsize[1]
         time.sleep(m.size * 1e-7) # Simulate processing time proportional to pixels
         return m
 
-    def mock_cvtColor(src, code):
+    def mock_cvtColor(src, code, dst=None):
         m = MagicMock()
         if hasattr(src, 'shape'):
             m.shape = src.shape[:2]
@@ -57,6 +57,8 @@ except ImportError:
         return [], None
 
     def mock_flip(src, flipCode, dst=None):
+        if dst is not None:
+            dst.shape = src.shape
         return src if dst is None else dst
 
     def mock_putText(img, text, org, fontFace, fontScale, color, thickness):
