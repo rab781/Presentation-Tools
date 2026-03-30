@@ -59,6 +59,7 @@ class VoiceRecognizer:
         
         # Vosk model (for offline mode)
         self.vosk_model = None
+        self.vosk_recognizer = None
         if offline_mode:
             self._load_vosk_model()
         
@@ -86,6 +87,7 @@ class VoiceRecognizer:
 
         if os.path.exists(model_path):
             self.vosk_model = Model(model_path)
+            self.vosk_recognizer = KaldiRecognizer(self.vosk_model, 16000)
             print(f"Vosk model loaded from {model_path}")
         else:
             print(f"Warning: Vosk model not found at {model_path}")
@@ -215,25 +217,25 @@ class VoiceRecognizer:
     
     def _recognize_with_vosk(self, audio) -> Optional[str]:
         """Recognize speech using Vosk (offline)"""
-        if not HAS_VOSK or not self.vosk_model:
+        if not HAS_VOSK or not self.vosk_model or not self.vosk_recognizer:
             return None
             
         try:
             # Convert audio to proper format
             raw_data = audio.get_raw_data(convert_rate=16000, convert_width=2)
             
-            # Create recognizer
-            rec = KaldiRecognizer(self.vosk_model, 16000)
+            # Reset the recognizer to clear state from previous utterances
+            self.vosk_recognizer.Reset()
             
             # Process audio
-            if rec.AcceptWaveform(raw_data):
-                result = json.loads(rec.Result())
+            if self.vosk_recognizer.AcceptWaveform(raw_data):
+                result = json.loads(self.vosk_recognizer.Result())
                 text = result.get("text", "")
                 if text:
                     return text.lower().strip()
             
             # Try partial result
-            partial = json.loads(rec.PartialResult())
+            partial = json.loads(self.vosk_recognizer.PartialResult())
             text = partial.get("partial", "")
             if text:
                 return text.lower().strip()
