@@ -49,3 +49,7 @@
 ## 2025-12-21 - [Prevent redundant external API calls in loops]
 **Learning:** Hardcoded sequential external API calls (e.g., trying an Indonesian Speech-to-Text API and waiting for it to timeout and throw an exception before trying English) cause significant latency (1-2 seconds) per recognition loop iteration.
 **Action:** Always check the configuration first to respect the user's preference. Conditionally skip unnecessary, expensive network requests to reduce latency, while ensuring you fall back safely ("fail open") to default behavior if the configuration value is unrecognized.
+
+## 2024-05-18 - [Cache KaldiRecognizer Instance]
+**Learning:** Re-instantiating `vosk.KaldiRecognizer` on every audio frame adds substantial per-call overhead and slows down offline voice recognition.
+**Action:** Cache a single `vosk.KaldiRecognizer` instance in the class, and reuse it across frames by calling `.Reset()` before processing new audio.
