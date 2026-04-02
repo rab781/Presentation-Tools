@@ -59,6 +59,7 @@ class VoiceRecognizer:
         
         # Vosk model (for offline mode)
         self.vosk_model = None
+        self.vosk_recognizer = None
         if offline_mode:
             self._load_vosk_model()
         
@@ -222,18 +223,22 @@ class VoiceRecognizer:
             # Convert audio to proper format
             raw_data = audio.get_raw_data(convert_rate=16000, convert_width=2)
             
-            # Create recognizer
-            rec = KaldiRecognizer(self.vosk_model, 16000)
+            # Create recognizer once to avoid per-call instantiation overhead
+            if self.vosk_recognizer is None:
+                self.vosk_recognizer = KaldiRecognizer(self.vosk_model, 16000)
+            else:
+                # Reset recognizer state to prevent cross-utterance bleeding
+                self.vosk_recognizer.Reset()
             
             # Process audio
-            if rec.AcceptWaveform(raw_data):
-                result = json.loads(rec.Result())
+            if self.vosk_recognizer.AcceptWaveform(raw_data):
+                result = json.loads(self.vosk_recognizer.Result())
                 text = result.get("text", "")
                 if text:
                     return text.lower().strip()
             
             # Try partial result
-            partial = json.loads(rec.PartialResult())
+            partial = json.loads(self.vosk_recognizer.PartialResult())
             text = partial.get("partial", "")
             if text:
                 return text.lower().strip()
