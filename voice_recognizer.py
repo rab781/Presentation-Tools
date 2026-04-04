@@ -86,11 +86,16 @@ class VoiceRecognizer:
 
         if os.path.exists(model_path):
             self.vosk_model = Model(model_path)
+            # ⚡ OPTIMIZATION: Cache the recognizer instance
+            # Instantiating KaldiRecognizer per utterance is expensive.
+            # We cache a single instance here for reuse in _recognize_with_vosk.
+            self.vosk_recognizer = KaldiRecognizer(self.vosk_model, 16000)
             print(f"Vosk model loaded from {model_path}")
         else:
             print(f"Warning: Vosk model not found at {model_path}")
             print("Download from: https://alphacephei.com/vosk/models")
             self.offline_mode = False
+            self.vosk_recognizer = None
     
     def start_listening(self, callback: Optional[Callable] = None):
         """Start listening for voice commands in background thread"""
@@ -215,15 +220,20 @@ class VoiceRecognizer:
     
     def _recognize_with_vosk(self, audio) -> Optional[str]:
         """Recognize speech using Vosk (offline)"""
-        if not HAS_VOSK or not self.vosk_model:
+        if not HAS_VOSK or not self.vosk_model or not self.vosk_recognizer:
             return None
             
         try:
             # Convert audio to proper format
             raw_data = audio.get_raw_data(convert_rate=16000, convert_width=2)
             
-            # Create recognizer
-            rec = KaldiRecognizer(self.vosk_model, 16000)
+            # ⚡ OPTIMIZATION: Reuse cached recognizer
+            # Use the pre-instantiated recognizer instead of creating a new one
+            # per utterance, eliminating object instantiation overhead.
+            # We MUST call .Reset() to clear the internal state and avoid bleeding
+            # recognition context across utterances.
+            rec = self.vosk_recognizer
+            rec.Reset()
             
             # Process audio
             if rec.AcceptWaveform(raw_data):
