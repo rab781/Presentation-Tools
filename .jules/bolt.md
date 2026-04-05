@@ -49,3 +49,7 @@
 ## 2025-12-21 - [Prevent redundant external API calls in loops]
 **Learning:** Hardcoded sequential external API calls (e.g., trying an Indonesian Speech-to-Text API and waiting for it to timeout and throw an exception before trying English) cause significant latency (1-2 seconds) per recognition loop iteration.
 **Action:** Always check the configuration first to respect the user's preference. Conditionally skip unnecessary, expensive network requests to reduce latency, while ensuring you fall back safely ("fail open") to default behavior if the configuration value is unrecognized.
+
+## 2025-12-22 - [Cache Vosk KaldiRecognizer instance]
+**Learning:** In `voice_recognizer.py`, instantiating a new `vosk.KaldiRecognizer` for every audio segment inside `_recognize_with_vosk` creates significant overhead.
+**Action:** Cache a single `KaldiRecognizer` instance during initialization (e.g., in `_load_vosk_model`) and reuse it across frames. Always explicitly call `.Reset()` on the cached instance before processing new audio to prevent stateful cross-utterance bleeding.
