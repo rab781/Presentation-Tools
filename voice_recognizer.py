@@ -222,8 +222,16 @@ class VoiceRecognizer:
             # Convert audio to proper format
             raw_data = audio.get_raw_data(convert_rate=16000, convert_width=2)
             
-            # Create recognizer
-            rec = KaldiRecognizer(self.vosk_model, 16000)
+            # ⚡ OPTIMIZATION: Cache KaldiRecognizer instance
+            # Instantiating KaldiRecognizer per utterance is expensive.
+            # We cache the instance and call Reset() between utterances
+            # to prevent cross-utterance bleeding while avoiding allocation overhead.
+            if not hasattr(self, '_vosk_recognizer'):
+                self._vosk_recognizer = KaldiRecognizer(self.vosk_model, 16000)
+            else:
+                self._vosk_recognizer.Reset()
+
+            rec = self._vosk_recognizer
             
             # Process audio
             if rec.AcceptWaveform(raw_data):
