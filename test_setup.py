@@ -223,9 +223,17 @@ def run_all_tests():
     print("TEST SUMMARY")
     print("="*60)
     
-    passed = sum(1 for v in results.values() if v is True)
-    failed = sum(1 for v in results.values() if v is False)
-    optional = sum(1 for v in results.values() if v is None)
+    passed = failed = optional = 0
+    # ⚡ OPTIMIZATION: Replacing three separate sum() passes with a single loop
+    # For small data structures, reducing multiple passes into a single manual loop
+    # avoids building multiple generator expressions and iterating the values three times.
+    for v in results.values():
+        if v is True:
+            passed += 1
+        elif v is False:
+            failed += 1
+        elif v is None:
+            optional += 1
     
     print(f"Passed:   {passed}")
     print(f"Failed:   {failed}")
