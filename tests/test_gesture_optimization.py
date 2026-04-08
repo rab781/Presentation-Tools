@@ -108,11 +108,10 @@ class TestGestureOptimization(unittest.TestCase):
         # Let's return area 2000 (should pass)
         mock_cv2.contourArea.return_value = 2000
 
-        # Moments
-        # Let's say center is at (100, 100) in small image (320x240)
-        # m10/m00 = x, m01/m00 = y
-        moments = {"m00": 1, "m10": 100, "m01": 100}
-        mock_cv2.moments.return_value = moments
+        # Bounding Rect
+        # Let's say bounding rect gives x=50, y=50, w=100, h=100 in small image (320x240)
+        # Center is at x + w//2 = 100, y + h//2 = 100
+        mock_cv2.boundingRect.return_value = (50, 50, 100, 100)
 
         # Reset mocks to clear previous calls
         mock_cv2.circle.reset_mock()
