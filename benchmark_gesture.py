@@ -18,14 +18,14 @@ except ImportError:
     sys.modules["cv2"] = mock_cv2
 
     # Setup mock behavior to simulate processing time
-    def mock_resize(src, dsize):
+    def mock_resize(src, dsize, dst=None):
         m = MagicMock()
         m.shape = (dsize[1], dsize[0])
         m.size = dsize[0] * dsize[1]
         time.sleep(m.size * 1e-7) # Simulate processing time proportional to pixels
         return m
 
-    def mock_cvtColor(src, code):
+    def mock_cvtColor(src, code, dst=None):
         m = MagicMock()
         if hasattr(src, 'shape'):
             m.shape = src.shape[:2]
@@ -57,7 +57,10 @@ except ImportError:
         return [], None
 
     def mock_flip(src, flipCode, dst=None):
-        return src if dst is None else dst
+        if dst is not None:
+            dst.shape = src.shape
+            return dst
+        return src
 
     def mock_putText(img, text, org, fontFace, fontScale, color, thickness):
         pass
@@ -67,6 +70,10 @@ except ImportError:
 
     def mock_drawContours(image, contours, contourIdx, color, thickness):
         pass
+
+    def mock_boundingRect(points):
+        time.sleep(1e-7)
+        return (0, 0, 10, 10)
 
     mock_cv2.resize.side_effect = mock_resize
     mock_cv2.cvtColor.side_effect = mock_cvtColor
@@ -79,6 +86,7 @@ except ImportError:
     mock_cv2.putText.side_effect = mock_putText
     mock_cv2.circle.side_effect = mock_circle
     mock_cv2.drawContours.side_effect = mock_drawContours
+    mock_cv2.boundingRect.side_effect = mock_boundingRect
 
     # Constants
     mock_cv2.COLOR_BGR2GRAY = 6
