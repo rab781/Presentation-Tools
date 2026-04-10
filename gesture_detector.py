@@ -136,39 +136,38 @@ class GestureDetector:
 
                 if cv2.contourArea(largest_contour) > min_area:  # Minimum area threshold
                     # Get center of motion
-                    M = cv2.moments(largest_contour)
-                    if M["m00"] != 0:
-                        cx_small = int(M["m10"] / M["m00"])
-                        cy_small = int(M["m01"] / M["m00"])
+                    x, y, w, h = cv2.boundingRect(largest_contour)
+                    cx_small = int(x + w // 2)
+                    cy_small = int(y + h // 2)
 
-                        # Scale back to original coordinates
-                        cx = int(cx_small / self.processing_scale)
-                        cy = int(cy_small / self.processing_scale)
+                    # Scale back to original coordinates
+                    cx = int(cx_small / self.processing_scale)
+                    cy = int(cy_small / self.processing_scale)
+
+                    # Detect swipe gestures based on movement
+                    if self.prev_center is not None:
+                        dx = cx - self.prev_center[0]
+                        dy = cy - self.prev_center[1]
                         
-                        # Detect swipe gestures based on movement
-                        if self.prev_center is not None:
-                            dx = cx - self.prev_center[0]
-                            dy = cy - self.prev_center[1]
+                        # Horizontal swipe
+                        if abs(dx) > 100 and abs(dy) < 50:
+                            if dx > 0:
+                                gesture = "SWIPE_RIGHT"
+                            else:
+                                gesture = "SWIPE_LEFT"
                             
-                            # Horizontal swipe
-                            if abs(dx) > 100 and abs(dy) < 50:
-                                if dx > 0:
-                                    gesture = "SWIPE_RIGHT"
-                                else:
-                                    gesture = "SWIPE_LEFT"
-                                
-                                if self._validate_gesture(gesture):
-                                    gesture_command = GESTURE_COMMANDS.get(gesture)
-                        
-                        self.prev_center = (cx, cy)
-                        
-                        # Draw visualization
-                        if draw_landmarks:
-                            cv2.circle(frame, (cx, cy), 10, (0, 255, 0), -1)
-                            # Scale contour for drawing
-                            scaled_contour = largest_contour * (1.0 / self.processing_scale)
-                            scaled_contour = scaled_contour.astype(np.int32)
-                            cv2.drawContours(frame, [scaled_contour], -1, (0, 255, 0), 2)
+                            if self._validate_gesture(gesture):
+                                gesture_command = GESTURE_COMMANDS.get(gesture)
+
+                    self.prev_center = (cx, cy)
+
+                    # Draw visualization
+                    if draw_landmarks:
+                        cv2.circle(frame, (cx, cy), 10, (0, 255, 0), -1)
+                        # Scale contour for drawing
+                        scaled_contour = largest_contour * (1.0 / self.processing_scale)
+                        scaled_contour = scaled_contour.astype(np.int32)
+                        cv2.drawContours(frame, [scaled_contour], -1, (0, 255, 0), 2)
         
         self.prev_frame = gray_small
         
