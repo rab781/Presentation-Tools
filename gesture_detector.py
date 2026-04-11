@@ -134,7 +134,12 @@ class GestureDetector:
                 # Scale threshold: 5000 is for 640x480.
                 min_area = 5000 * (self.processing_scale ** 2)
 
-                if cv2.contourArea(largest_contour) > min_area:  # Minimum area threshold
+                # ⚡ OPTIMIZATION: Cache contour area to prevent recalculation
+                # cv2.contourArea is computationally expensive. We cache the result here
+                # to avoid calling it twice for the largest contour.
+                largest_area = cv2.contourArea(largest_contour)
+
+                if largest_area > min_area:  # Minimum area threshold
                     # Get center of motion
                     x, y, w, h = cv2.boundingRect(largest_contour)
                     cx_small = int(x + w // 2)
