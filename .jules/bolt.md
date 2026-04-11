@@ -53,3 +53,7 @@
 ## 2025-12-22 - [Faster Contour Center Calculation]
 **Learning:** In `gesture_detector.py`, using `cv2.moments` to calculate the center of a contour (`cx_small = int(M["m10"] / M["m00"])`) is computationally expensive because it calculates up to 3rd-order spatial moments. For simple center finding, bounding rectangle arithmetic (`x + w//2`, `y + h//2`) using `cv2.boundingRect` is significantly faster (approx. 7.6x) and avoids the risk of division by zero.
 **Action:** Replace `cv2.moments` with `cv2.boundingRect` when only the center coordinates of a contour are needed to reduce CPU overhead.
+
+## 2025-12-23 - [Optimization caching contour Area]
+**Learning:** In `gesture_detector.py`, using `cv2.contourArea` to calculate the area of a contour is computationally expensive. When we find the maximum contour using `max(contours, key=cv2.contourArea)`, `cv2.contourArea` is called for every contour. Then, checking if the maximum contour's area is above a threshold via `cv2.contourArea(largest_contour) > min_area` re-evaluates the area of the largest contour. We should cache the largest area. However, Python's `max` can be slow when combined with a lambda and list comprehension `max([(c, cv2.contourArea(c)) for c in contours], key=lambda x: x[1])`. Instead, we should assign `largest_area = cv2.contourArea(largest_contour)` after finding the largest contour.
+**Action:** Assign `largest_area = cv2.contourArea(largest_contour)` after finding the maximum contour to prevent redundant recalculation.

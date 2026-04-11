@@ -11,6 +11,23 @@ try:
 except ImportError:
     # Mock numpy
     mock_np = MagicMock()
+
+    def mock_empty_like(a):
+        m = MagicMock()
+        m.shape = a.shape
+        m.size = a.size
+        return m
+
+    def mock_empty(shape, dtype=None):
+        m = MagicMock()
+        m.shape = shape
+        m.size = 1
+        for d in shape:
+            m.size *= d
+        return m
+
+    mock_np.empty_like.side_effect = mock_empty_like
+    mock_np.empty.side_effect = mock_empty
     sys.modules["numpy"] = mock_np
 
     # Mock cv2
@@ -18,14 +35,14 @@ except ImportError:
     sys.modules["cv2"] = mock_cv2
 
     # Setup mock behavior to simulate processing time
-    def mock_resize(src, dsize):
+    def mock_resize(src, dsize, dst=None):
         m = MagicMock()
         m.shape = (dsize[1], dsize[0])
         m.size = dsize[0] * dsize[1]
         time.sleep(m.size * 1e-7) # Simulate processing time proportional to pixels
-        return m
+        return m if dst is None else dst
 
-    def mock_cvtColor(src, code):
+    def mock_cvtColor(src, code, dst=None):
         m = MagicMock()
         if hasattr(src, 'shape'):
             m.shape = src.shape[:2]
@@ -34,7 +51,7 @@ except ImportError:
             m.shape = (480, 640)
             m.size = 640 * 480
         time.sleep(m.size * 1e-7)
-        return m
+        return m if dst is None else dst
 
     def mock_GaussianBlur(src, ksize, sigmaX, dst=None):
         time.sleep(src.size * 5e-7) # Blur is expensive
