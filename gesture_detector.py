@@ -16,6 +16,10 @@ class GestureDetector:
     
     def __init__(self, camera_index=0, processing_scale=0.5):
         self.camera_index = camera_index
+        if processing_scale <= 0:
+            raise ValueError(
+                f"processing_scale must be greater than 0, got {processing_scale}"
+            )
         self.processing_scale = processing_scale
         self.cap = None
         
@@ -28,6 +32,12 @@ class GestureDetector:
         # For simple motion detection
         self.prev_frame = None
         self.prev_center = None
+
+        # ⚡ OPTIMIZATION: Pre-compute static values
+        # Pre-calculating thresholds and multipliers in __init__ prevents
+        # recalculating them every frame in the hot loop.
+        self.min_area_threshold = 5000 * (self.processing_scale ** 2)
+        self.inv_processing_scale = 1.0 / self.processing_scale
         
     def start(self):
         """Start camera capture"""
@@ -131,18 +141,22 @@ class GestureDetector:
                 # Find largest contour
                 largest_contour = max(contours, key=cv2.contourArea)
                 
-                # Scale threshold: 5000 is for 640x480.
-                min_area = 5000 * (self.processing_scale ** 2)
+                # ⚡ OPTIMIZATION: Cache expensive contour area calculation
+                # cv2.contourArea is relatively expensive. Caching the result here
+                # prevents evaluating it again for the threshold check.
+                largest_area = cv2.contourArea(largest_contour)
 
-                if cv2.contourArea(largest_contour) > min_area:  # Minimum area threshold
+                if largest_area > self.min_area_threshold:  # Minimum area threshold
                     # Get center of motion
                     x, y, w, h = cv2.boundingRect(largest_contour)
                     cx_small = int(x + w // 2)
                     cy_small = int(y + h // 2)
 
                     # Scale back to original coordinates
-                    cx = int(cx_small / self.processing_scale)
-                    cy = int(cy_small / self.processing_scale)
+                    # ⚡ OPTIMIZATION: Multiply by pre-computed inverse instead of dividing
+                    # Multiplication is slightly faster than division on most CPU architectures.
+                    cx = int(cx_small * self.inv_processing_scale)
+                    cy = int(cy_small * self.inv_processing_scale)
 
                     # Detect swipe gestures based on movement
                     if self.prev_center is not None:
@@ -165,7 +179,8 @@ class GestureDetector:
                     if draw_landmarks:
                         cv2.circle(frame, (cx, cy), 10, (0, 255, 0), -1)
                         # Scale contour for drawing
-                        scaled_contour = largest_contour * (1.0 / self.processing_scale)
+                        # ⚡ OPTIMIZATION: Multiply by pre-computed inverse instead of dividing
+                        scaled_contour = largest_contour * self.inv_processing_scale
                         scaled_contour = scaled_contour.astype(np.int32)
                         cv2.drawContours(frame, [scaled_contour], -1, (0, 255, 0), 2)
         

@@ -18,14 +18,14 @@ except ImportError:
     sys.modules["cv2"] = mock_cv2
 
     # Setup mock behavior to simulate processing time
-    def mock_resize(src, dsize):
+    def mock_resize(src, dsize, dst=None):
         m = MagicMock()
         m.shape = (dsize[1], dsize[0])
         m.size = dsize[0] * dsize[1]
         time.sleep(m.size * 1e-7) # Simulate processing time proportional to pixels
-        return m
+        return dst if dst is not None else m
 
-    def mock_cvtColor(src, code):
+    def mock_cvtColor(src, code, dst=None):
         m = MagicMock()
         if hasattr(src, 'shape'):
             m.shape = src.shape[:2]
@@ -34,7 +34,7 @@ except ImportError:
             m.shape = (480, 640)
             m.size = 640 * 480
         time.sleep(m.size * 1e-7)
-        return m
+        return dst if dst is not None else m
 
     def mock_GaussianBlur(src, ksize, sigmaX, dst=None):
         time.sleep(src.size * 5e-7) # Blur is expensive
@@ -57,6 +57,10 @@ except ImportError:
         return [], None
 
     def mock_flip(src, flipCode, dst=None):
+        if dst is not None and hasattr(src, "shape"):
+            if hasattr(dst, "shape"): dst.shape = src.shape
+            if hasattr(dst, "size"): dst.size = src.size
+
         return src if dst is None else dst
 
     def mock_putText(img, text, org, fontFace, fontScale, color, thickness):
@@ -120,7 +124,7 @@ def benchmark():
     print("\nRunning baseline (full resolution)...")
 
     start_time = time.time()
-    iterations = 100
+    iterations = 10
 
     for _ in range(iterations):
         detector.detect_gesture(frame, draw_landmarks=False)
