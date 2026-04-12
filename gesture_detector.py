@@ -16,6 +16,10 @@ class GestureDetector:
     
     def __init__(self, camera_index=0, processing_scale=0.5):
         self.camera_index = camera_index
+        if processing_scale <= 0:
+            raise ValueError(
+                f"processing_scale must be greater than 0, got {processing_scale}"
+            )
         self.processing_scale = processing_scale
         self.cap = None
         
