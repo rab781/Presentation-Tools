@@ -29,6 +29,13 @@ class GestureDetector:
         self.prev_frame = None
         self.prev_center = None
         
+        # Pre-calculated mathematical constants
+        self.min_area = 5000 * (self.processing_scale ** 2)
+        if self.processing_scale != 0:
+            self.inv_processing_scale = 1.0 / self.processing_scale
+        else:
+            self.inv_processing_scale = 1.0
+
     def start(self):
         """Start camera capture"""
         self.cap = cv2.VideoCapture(self.camera_index)
@@ -130,19 +137,16 @@ class GestureDetector:
             if contours:
                 # Find largest contour
                 largest_contour = max(contours, key=cv2.contourArea)
-                
-                # Scale threshold: 5000 is for 640x480.
-                min_area = 5000 * (self.processing_scale ** 2)
 
-                if cv2.contourArea(largest_contour) > min_area:  # Minimum area threshold
+                if cv2.contourArea(largest_contour) > self.min_area:  # Minimum area threshold
                     # Get center of motion
                     x, y, w, h = cv2.boundingRect(largest_contour)
                     cx_small = int(x + w // 2)
                     cy_small = int(y + h // 2)
 
                     # Scale back to original coordinates
-                    cx = int(cx_small / self.processing_scale)
-                    cy = int(cy_small / self.processing_scale)
+                    cx = int(cx_small * self.inv_processing_scale)
+                    cy = int(cy_small * self.inv_processing_scale)
 
                     # Detect swipe gestures based on movement
                     if self.prev_center is not None:
@@ -165,7 +169,7 @@ class GestureDetector:
                     if draw_landmarks:
                         cv2.circle(frame, (cx, cy), 10, (0, 255, 0), -1)
                         # Scale contour for drawing
-                        scaled_contour = largest_contour * (1.0 / self.processing_scale)
+                        scaled_contour = largest_contour * self.inv_processing_scale
                         scaled_contour = scaled_contour.astype(np.int32)
                         cv2.drawContours(frame, [scaled_contour], -1, (0, 255, 0), 2)
         
