@@ -53,3 +53,7 @@
 ## 2025-12-22 - [Faster Contour Center Calculation]
 **Learning:** In `gesture_detector.py`, using `cv2.moments` to calculate the center of a contour (`cx_small = int(M["m10"] / M["m00"])`) is computationally expensive because it calculates up to 3rd-order spatial moments. For simple center finding, bounding rectangle arithmetic (`x + w//2`, `y + h//2`) using `cv2.boundingRect` is significantly faster (approx. 7.6x) and avoids the risk of division by zero.
 **Action:** Replace `cv2.moments` with `cv2.boundingRect` when only the center coordinates of a contour are needed to reduce CPU overhead.
+
+## 2025-12-23 - [Pre-calculate mathematical constants to reduce per-frame overhead]
+**Learning:** In high-frequency loops (like `detect_gesture` in `gesture_detector.py` running at 30+ FPS), re-evaluating static mathematical formulas such as `min_area = 5000 * (self.processing_scale ** 2)` or performing repeated division (`1.0 / self.processing_scale`) creates unnecessary CPU overhead.
+**Action:** Pre-calculate static values and division multipliers (e.g., `self.min_area`, `self.inv_processing_scale = 1.0 / self.processing_scale`) in the class `__init__` instead of re-evaluating them per frame, and use multiplication (`value * self.inv_processing_scale`) instead of division to improve calculation speed.
