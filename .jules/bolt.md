@@ -53,3 +53,11 @@
 ## 2025-12-22 - [Faster Contour Center Calculation]
 **Learning:** In `gesture_detector.py`, using `cv2.moments` to calculate the center of a contour (`cx_small = int(M["m10"] / M["m00"])`) is computationally expensive because it calculates up to 3rd-order spatial moments. For simple center finding, bounding rectangle arithmetic (`x + w//2`, `y + h//2`) using `cv2.boundingRect` is significantly faster (approx. 7.6x) and avoids the risk of division by zero.
 **Action:** Replace `cv2.moments` with `cv2.boundingRect` when only the center coordinates of a contour are needed to reduce CPU overhead.
+
+## 2025-12-23 - Pre-calculate static values in hot path
+**Learning:** In `gesture_detector.py`, calculating static threshold variables and performing divisions per frame using the `processing_scale` introduced small but unnecessary mathematical overhead.
+**Action:** Pre-calculate static scaling factors like `min_area = 5000 * (self.processing_scale ** 2)` and division multipliers like `inv_processing_scale = 1.0 / self.processing_scale` in the `__init__` method.
+
+## 2025-12-23 - Cache contour area
+**Learning:** In `gesture_detector.py`, `cv2.contourArea(largest_contour)` was implicitly evaluated multiple times: once during the `max()` selection, and again when checking against the `min_area` threshold.
+**Action:** Evaluate it once using `largest_area = cv2.contourArea(largest_contour)` and cache it in a local variable to prevent redundant evaluation during threshold validation.
