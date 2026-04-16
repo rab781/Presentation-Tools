@@ -18,14 +18,14 @@ except ImportError:
     sys.modules["cv2"] = mock_cv2
 
     # Setup mock behavior to simulate processing time
-    def mock_resize(src, dsize):
+    def mock_resize(src, dsize, dst=None):
         m = MagicMock()
         m.shape = (dsize[1], dsize[0])
         m.size = dsize[0] * dsize[1]
         time.sleep(m.size * 1e-7) # Simulate processing time proportional to pixels
         return m
 
-    def mock_cvtColor(src, code):
+    def mock_cvtColor(src, code, dst=None):
         m = MagicMock()
         if hasattr(src, 'shape'):
             m.shape = src.shape[:2]
@@ -56,8 +56,38 @@ except ImportError:
         # Return empty contours
         return [], None
 
+    def mock_empty_like(src):
+        m = MagicMock()
+        m.shape = src.shape
+        m.size = src.size
+        return m
+
+    def mock_empty(shape, dtype=None):
+        m = MagicMock()
+        m.shape = shape
+
+        # Try to calculate size if shape is iterable
+        try:
+            size = 1
+            for dim in shape:
+                size *= dim
+            m.size = size
+        except TypeError:
+            # Handle if shape is just a single integer
+            m.size = shape
+            m.shape = (shape,)
+
+        return m
+
+    mock_np.empty_like.side_effect = mock_empty_like
+    mock_np.empty.side_effect = mock_empty
+
     def mock_flip(src, flipCode, dst=None):
-        return src if dst is None else dst
+        if dst is not None:
+            dst.shape = src.shape
+            return dst
+        return src
+
 
     def mock_putText(img, text, org, fontFace, fontScale, color, thickness):
         pass
