@@ -37,9 +37,9 @@ class TestBlurOptimization(unittest.TestCase):
         frame = MagicMock()
         frame.shape = (480, 640, 3) # Height, Width, Channels
 
-        mock_cv2.cvtColor.return_value = MagicMock()
+        mock_cv2.resize.return_value = MagicMock()
         mock_gray_small = MagicMock()
-        mock_cv2.resize.return_value = mock_gray_small
+        mock_cv2.cvtColor.return_value = mock_gray_small
 
         # Call detect_gesture
         detector.detect_gesture(frame, draw_landmarks=False)

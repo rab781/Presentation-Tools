@@ -57,3 +57,7 @@
 ## 2025-12-23 - [Pre-calculate math and cache properties in hot loops]
 **Learning:** In computer vision hot loops like `detect_gesture`, repeating floating point math operations like division `cx_small / self.processing_scale` and `5000 * (self.processing_scale ** 2)` per frame introduces CPU overhead. Similarly, repeatedly evaluating properties like `cv2.contourArea(largest_contour)` is slower than evaluating it once and caching the result in a variable (e.g. `largest_area`).
 **Action:** Pre-calculate static values such as area thresholds and division multipliers (e.g. `self.inv_processing_scale = 1.0 / self.processing_scale`) in the `__init__` method, and cache expensive evaluations like contour areas in local variables when they need to be accessed multiple times.
+
+## 2025-12-24 - [Resize before grayscale conversion]
+**Learning:** In `gesture_detector.py`, converting a full-resolution frame to grayscale before resizing it is computationally inefficient because it processes many more pixels than necessary (e.g., 640x480 instead of 320x240).
+**Action:** Resize the frame first before applying `cv2.cvtColor` to grayscale. This significantly reduces the computational load and increases frame rate (from ~9.7 FPS to ~12.6 FPS).
