@@ -68,8 +68,8 @@ class TestGestureOptimization(unittest.TestCase):
         # Gaussian blur should return the mocked resized gray to ensure shape persists
         mock_cv2.GaussianBlur.return_value = mock_resized_gray
 
-        # We need resize to return a mock but it should let us check its arguments.
-        mock_cv2.resize.return_value = mock_resized_gray
+        # We need cvtColor to return a mock but it should let us check its arguments.
+        mock_cv2.cvtColor.return_value = mock_resized_gray
         mock_cv2.findContours.return_value = ([], None)
         mock_cv2.threshold.return_value = (None, MagicMock())
 
@@ -79,7 +79,7 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify resize call
         # Expected size: width=320 (640*0.5), height=240 (480*0.5)
         # Note: cv2.resize takes (width, height)
-        self.assertEqual(mock_cv2.resize.call_args[0][0], mock_cv2.cvtColor.return_value)
+        # It's now called directly on the frame (or flipped frame)
         self.assertEqual(mock_cv2.resize.call_args[0][1], (320, 240))
 
     def test_coordinate_scaling(self):
