@@ -57,3 +57,6 @@
 ## 2025-12-23 - [Pre-calculate math and cache properties in hot loops]
 **Learning:** In computer vision hot loops like `detect_gesture`, repeating floating point math operations like division `cx_small / self.processing_scale` and `5000 * (self.processing_scale ** 2)` per frame introduces CPU overhead. Similarly, repeatedly evaluating properties like `cv2.contourArea(largest_contour)` is slower than evaluating it once and caching the result in a variable (e.g. `largest_area`).
 **Action:** Pre-calculate static values such as area thresholds and division multipliers (e.g. `self.inv_processing_scale = 1.0 / self.processing_scale`) in the `__init__` method, and cache expensive evaluations like contour areas in local variables when they need to be accessed multiple times.
+## 2025-12-25 - [Optimize sequence of cv2.resize and cv2.cvtColor]
+**Learning:** In computer vision pipelines like `gesture_detector.py`, applying `cv2.resize` to downscale the frame before applying `cv2.cvtColor` for grayscale conversion significantly improves performance by reducing the total number of pixels processed during the color space conversion.
+**Action:** Always resize frames before converting colors to minimize CPU overhead in hot paths.

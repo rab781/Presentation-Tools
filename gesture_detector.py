@@ -76,16 +76,17 @@ class GestureDetector:
         proc_w = int(width * self.processing_scale)
         proc_h = int(height * self.processing_scale)
         
-        # Convert to grayscale for motion detection
-        # ⚡ OPTIMIZATION: Pre-allocate buffer for cvtColor
-        # cv2.cvtColor allocates a new array by default. By passing a pre-allocated
-        # buffer to the `dst` parameter, we avoid an expensive memory allocation
-        # (640x480 bytes) per frame, reducing garbage collection overhead.
-        if not hasattr(self, 'gray_buffer') or self.gray_buffer.shape[:2] != (height, width):
-            self.gray_buffer = np.empty((height, width), dtype=np.uint8)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY, dst=self.gray_buffer)
+        # ⚡ OPTIMIZATION: Downscale frame before color conversion
+        # Applying cv2.resize to downscale the frame before applying cv2.cvtColor
+        # significantly improves performance by reducing the total number of pixels
+        # processed during the color space conversion.
 
-        # ⚡ OPTIMIZATION: Double-buffering for resize to avoid per-frame allocation
+        if not hasattr(self, 'small_frame_buffer') or self.small_frame_buffer.shape[:2] != (proc_h, proc_w):
+            self.small_frame_buffer = np.empty((proc_h, proc_w, 3), dtype=np.uint8)
+
+        frame_small = cv2.resize(frame, (proc_w, proc_h), dst=self.small_frame_buffer)
+
+        # ⚡ OPTIMIZATION: Double-buffering for grayscale to avoid per-frame allocation
         # We use a double-buffering scheme because `self.prev_frame` (from the previous loop)
         # must be preserved for motion detection via `cv2.absdiff`, which then mutates it in-place.
         if not hasattr(self, 'gray_small_buffers'):
@@ -97,7 +98,7 @@ class GestureDetector:
             curr_buffer = np.empty((proc_h, proc_w), dtype=np.uint8)
             self.gray_small_buffers[self.buffer_idx] = curr_buffer
 
-        gray_small = cv2.resize(gray, (proc_w, proc_h), dst=curr_buffer)
+        gray_small = cv2.cvtColor(frame_small, cv2.COLOR_BGR2GRAY, dst=curr_buffer)
 
         # Swap buffer index for the next frame
         self.buffer_idx = 1 - self.buffer_idx
