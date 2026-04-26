@@ -20,8 +20,9 @@ except ImportError:
     # Setup mock behavior to simulate processing time
     def mock_resize(src, dsize, dst=None):
         m = MagicMock()
-        m.shape = (dsize[1], dsize[0])
-        m.size = dsize[0] * dsize[1]
+        channels = src.shape[2] if len(src.shape) > 2 else 1
+        m.shape = (dsize[1], dsize[0], channels) if channels > 1 else (dsize[1], dsize[0])
+        m.size = dsize[0] * dsize[1] * channels
         time.sleep(m.size * 1e-7) # Simulate processing time proportional to pixels
         return m
 
