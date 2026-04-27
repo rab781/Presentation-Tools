@@ -188,41 +188,45 @@ class PresentationController:
             # Get window title
             window_title = win32gui.GetWindowText(window).lower()
             
-            # Get process name
-            try:
-                _, process_id = win32process.GetWindowThreadProcessId(window)
-                process = psutil.Process(process_id)
-                process_name = process.name().lower()
-            except Exception:
-                process_name = ""
-            
             print(f"Active window: '{window_title}'")
-            print(f"Process: '{process_name}'")
             
-            # Match to known applications by process name first (more reliable)
-            if "powerpnt.exe" in process_name or "powerpnt" in process_name:
-                detected = "powerpoint"
-            elif "chrome.exe" in process_name or "msedge.exe" in process_name or "firefox.exe" in process_name:
-                # Browser - check title for specific apps
-                if "google slides" in window_title or "presentation" in window_title:
-                    detected = "google_slides"
-                elif "canva" in window_title:
-                    detected = "canva"
-                else:
-                    detected = "universal"
-            elif "acrord" in process_name or "acrobat" in process_name or "foxitreader" in process_name:
-                detected = "pdf_viewer"
-            # Fallback to window title matching
-            elif "powerpoint" in window_title or "pptx" in window_title or ".ppt" in window_title:
+            # ⚡ OPTIMIZATION: Check window title first before making expensive system calls.
+            # `psutil.Process()` is a slow system call. By checking for obvious keywords in the
+            # window title (which we already have via a fast win32gui call) first, we can skip
+            # the expensive process lookup entirely in most common scenarios, significantly
+            # reducing detection latency and CPU overhead.
+            if "powerpoint" in window_title or "pptx" in window_title or ".ppt" in window_title:
                 detected = "powerpoint"
             elif "google slides" in window_title:
                 detected = "google_slides"
-            elif "pdf" in window_title or "adobe" in window_title:
-                detected = "pdf_viewer"
             elif "canva" in window_title:
                 detected = "canva"
+            elif "pdf" in window_title or "adobe" in window_title:
+                detected = "pdf_viewer"
             else:
-                detected = "universal"
+                # Fallback to expensive process name lookup
+                try:
+                    _, process_id = win32process.GetWindowThreadProcessId(window)
+                    process = psutil.Process(process_id)
+                    process_name = process.name().lower()
+                except Exception:
+                    process_name = ""
+
+                print(f"Process: '{process_name}'")
+
+                # Match to known applications by process name
+                if "powerpnt.exe" in process_name or "powerpnt" in process_name:
+                    detected = "powerpoint"
+                elif "chrome.exe" in process_name or "msedge.exe" in process_name or "firefox.exe" in process_name:
+                    # Browser - check title for specific apps (already done above, but fallback)
+                    if "presentation" in window_title:
+                        detected = "google_slides"
+                    else:
+                        detected = "universal"
+                elif "acrord" in process_name or "acrobat" in process_name or "foxitreader" in process_name:
+                    detected = "pdf_viewer"
+                else:
+                    detected = "universal"
             
             print(f"Detected application profile: {detected}")
             return detected
