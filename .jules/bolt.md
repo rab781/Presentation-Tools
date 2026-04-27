@@ -57,3 +57,7 @@
 ## 2025-12-23 - [Pre-calculate math and cache properties in hot loops]
 **Learning:** In computer vision hot loops like `detect_gesture`, repeating floating point math operations like division `cx_small / self.processing_scale` and `5000 * (self.processing_scale ** 2)` per frame introduces CPU overhead. Similarly, repeatedly evaluating properties like `cv2.contourArea(largest_contour)` is slower than evaluating it once and caching the result in a variable (e.g. `largest_area`).
 **Action:** Pre-calculate static values such as area thresholds and division multipliers (e.g. `self.inv_processing_scale = 1.0 / self.processing_scale`) in the `__init__` method, and cache expensive evaluations like contour areas in local variables when they need to be accessed multiple times.
+
+## 2025-12-24 - [Optimize cvtColor by Resizing First]
+**Learning:** In computer vision pipelines, resizing a full-resolution 3-channel color image *before* converting it to grayscale is faster than converting the full-resolution image to grayscale and then resizing it. This is because `cv2.cvtColor` processing time scales with the number of pixels, and reducing the resolution first significantly decreases the number of pixels it must process, out-weighing the slightly higher cost of resizing 3 channels vs 1 channel.
+**Action:** When a pipeline downscales the input frame and requires grayscale, always apply `cv2.resize` to the color frame *before* applying `cv2.cvtColor` to optimize CPU usage.
