@@ -61,3 +61,6 @@
 ## 2025-12-24 - [Optimize cvtColor by Resizing First]
 **Learning:** In computer vision pipelines, resizing a full-resolution 3-channel color image *before* converting it to grayscale is faster than converting the full-resolution image to grayscale and then resizing it. This is because `cv2.cvtColor` processing time scales with the number of pixels, and reducing the resolution first significantly decreases the number of pixels it must process, out-weighing the slightly higher cost of resizing 3 channels vs 1 channel.
 **Action:** When a pipeline downscales the input frame and requires grayscale, always apply `cv2.resize` to the color frame *before* applying `cv2.cvtColor` to optimize CPU usage.
+## 2025-12-25 - [Optimize Windows App Detection via Window Title]
+**Learning:** Checking the active process name via `psutil.Process(process_id).name()` on Windows is a slow, blocking system call. Doing this repeatedly in a tight loop to detect the active presentation app causes significant CPU overhead.
+**Action:** Optimize application detection by checking the window title via `win32gui.GetWindowText()` first for specific keywords (e.g., 'powerpoint', 'google slides'). Only fall back to the expensive process lookup if no specific fast match is found. Avoid matching overly generic terms like 'presentation' on the fast path to prevent false positives.
