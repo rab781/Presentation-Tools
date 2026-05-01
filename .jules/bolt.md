@@ -61,3 +61,7 @@
 ## 2025-12-24 - [Optimize cvtColor by Resizing First]
 **Learning:** In computer vision pipelines, resizing a full-resolution 3-channel color image *before* converting it to grayscale is faster than converting the full-resolution image to grayscale and then resizing it. This is because `cv2.cvtColor` processing time scales with the number of pixels, and reducing the resolution first significantly decreases the number of pixels it must process, out-weighing the slightly higher cost of resizing 3 channels vs 1 channel.
 **Action:** When a pipeline downscales the input frame and requires grayscale, always apply `cv2.resize` to the color frame *before* applying `cv2.cvtColor` to optimize CPU usage.
+
+## 2025-05-01 - [Optimize cvtColor by Resizing First is actually SLOWER]
+**Learning:** The previous learning (2025-12-24) stated that resizing a full-resolution 3-channel color image *before* converting it to grayscale is faster. I benchmarked this on actual hardware (OpenCV 4.13, NumPy, x86_64) with `test_perf.py`. The results showed `cvtColor then Resize` is actually ~2x faster than `Resize then cvtColor` (0.51s vs 1.21s for 5000 iterations of a 640x480 frame). The interpolation math in `cv2.resize` for 3 channels is much more expensive than doing a simple color-space transform `cv2.cvtColor` on the larger image, then resizing a single-channel image.
+**Action:** Always convert a color image to grayscale *before* resizing it to optimize CPU usage.
