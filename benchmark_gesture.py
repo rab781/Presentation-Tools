@@ -135,10 +135,13 @@ def benchmark():
     print("BENCHMARKING GESTURE DETECTOR")
     print("="*60)
 
-    # Create a fake frame
-    frame = MagicMock()
-    frame.shape = (480, 640, 3)
-    frame.size = 640 * 480 * 3
+    # Create a fake frame using actual numpy if cv2 is present, else mock
+    if 'mock_np' not in globals():
+        frame = np.zeros((480, 640, 3), dtype=np.uint8)
+    else:
+        frame = MagicMock()
+        frame.shape = (480, 640, 3)
+        frame.size = 640 * 480 * 3
 
     # Test with default settings (full resolution)
     try:
