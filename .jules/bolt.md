@@ -61,3 +61,9 @@
 ## 2025-12-24 - [Optimize cvtColor by Resizing First]
 **Learning:** In computer vision pipelines, resizing a full-resolution 3-channel color image *before* converting it to grayscale is faster than converting the full-resolution image to grayscale and then resizing it. This is because `cv2.cvtColor` processing time scales with the number of pixels, and reducing the resolution first significantly decreases the number of pixels it must process, out-weighing the slightly higher cost of resizing 3 channels vs 1 channel.
 **Action:** When a pipeline downscales the input frame and requires grayscale, always apply `cv2.resize` to the color frame *before* applying `cv2.cvtColor` to optimize CPU usage.
+
+## 2024-05-02 - Grayscale then Resize is Faster
+
+**Learning:** In computer vision pipelines like `gesture_detector.py`, always apply `cv2.cvtColor` to convert to grayscale *before* applying `cv2.resize` to downscale. `cv2.cvtColor` is highly vectorized and fast, whereas `cv2.resize` uses interpolation which scales heavily with the number of channels. Resizing a 3-channel image before grayscale conversion is a significant de-optimization. My previous optimization of resizing before color conversion was wrong!
+
+**Action:** Always convert to grayscale before resizing to minimize interpolation overhead.

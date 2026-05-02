@@ -58,7 +58,8 @@ class TestGestureOptimization(unittest.TestCase):
         frame.shape = (480, 640, 3) # Height, Width, Channels
 
         # Setup mock returns
-        mock_cv2.cvtColor.return_value = MagicMock()
+        mock_gray_full = MagicMock()
+        mock_cv2.cvtColor.return_value = mock_gray_full
         mock_cv2.resize.return_value = MagicMock()
 
         # Mock resize so that it returns an object with shape, then GaussianBlur uses that
@@ -79,8 +80,8 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify resize and cvtColor calls
         # Expected size: width=320 (640*0.5), height=240 (480*0.5)
         # Note: cv2.resize takes (width, height)
-        # We now resize before cvtColor
-        self.assertEqual(mock_cv2.cvtColor.call_args[0][0], mock_cv2.resize.return_value)
+        # We now convert to grayscale before resizing
+        self.assertEqual(mock_cv2.resize.call_args[0][0], mock_gray_full)
         self.assertEqual(mock_cv2.resize.call_args[0][1], (320, 240))
 
     def test_coordinate_scaling(self):

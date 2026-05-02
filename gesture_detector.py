@@ -76,19 +76,18 @@ class GestureDetector:
         proc_w = int(width * self.processing_scale)
         proc_h = int(height * self.processing_scale)
         
-        # ⚡ OPTIMIZATION: Resize before color conversion
-        # Resizing the image first reduces the total number of pixels that cv2.cvtColor
-        # has to process, significantly reducing CPU overhead. We pre-allocate buffers
-        # for both the resized color frame and the final grayscale frame.
-        if not hasattr(self, 'small_buffer') or self.small_buffer.shape[:2] != (proc_h, proc_w):
-            channels = frame.shape[2] if len(frame.shape) > 2 else 1
-            dtype = getattr(frame, 'dtype', np.uint8)
-            self.small_buffer = np.empty((proc_h, proc_w, channels), dtype=dtype) if channels > 1 else np.empty((proc_h, proc_w), dtype=dtype)
+        # ⚡ OPTIMIZATION: Convert to grayscale before resizing
+        # Converting to grayscale first is highly vectorized and fast. Resizing an image
+        # is an interpolation operation that scales heavily with the number of channels.
+        # Doing grayscale first significantly reduces the interpolation overhead.
 
-        small_frame = cv2.resize(frame, (proc_w, proc_h), dst=self.small_buffer)
+        if not hasattr(self, 'gray_full_buffer') or self.gray_full_buffer.shape[:2] != (height, width):
+            self.gray_full_buffer = np.empty((height, width), dtype=getattr(frame, 'dtype', np.uint8))
 
-        # ⚡ OPTIMIZATION: Double-buffering for the grayscale image
-        # We use a double-buffering scheme for the final grayscale frame because `self.prev_frame`
+        gray_full = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY, dst=self.gray_full_buffer)
+
+        # ⚡ OPTIMIZATION: Double-buffering for the downscaled grayscale image
+        # We use a double-buffering scheme for the final downscaled frame because `self.prev_frame`
         # (from the previous loop) must be preserved for motion detection via `cv2.absdiff`,
         # which then mutates it in-place.
         if not hasattr(self, 'gray_small_buffers'):
@@ -100,8 +99,8 @@ class GestureDetector:
             curr_buffer = np.empty((proc_h, proc_w), dtype=np.uint8)
             self.gray_small_buffers[self.buffer_idx] = curr_buffer
 
-        # Convert the smaller image to grayscale
-        gray_small = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY, dst=curr_buffer)
+        # Downscale the grayscale image
+        gray_small = cv2.resize(gray_full, (proc_w, proc_h), dst=curr_buffer)
 
         # Swap buffer index for the next frame
         self.buffer_idx = 1 - self.buffer_idx
