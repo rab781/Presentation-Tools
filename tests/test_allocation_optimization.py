@@ -79,7 +79,7 @@ class TestAllocationOptimization(unittest.TestCase):
         # Verify cvtColor was called with dst
         self.assertTrue(mock_cv2.cvtColor.called, "cv2.cvtColor was not called")
         cvtColor_kwargs = mock_cv2.cvtColor.call_args[1]
-        self.assertIn('dst', cvtColor_kwargs, "cv2.resize should use 'dst' parameter to avoid memory allocation")
+        self.assertIn('dst', cvtColor_kwargs, "cv2.cvtColor should use 'dst' parameter to avoid memory allocation")
 
         # Verify resize was called with dst
         self.assertTrue(mock_cv2.resize.called, "cv2.resize was not called")
