@@ -39,6 +39,9 @@ class PresentationController:
         self.last_command_time = {}
         self.command_queue = queue.Queue()
         
+        # Process cache for optimization
+        self._process_cache = {}
+
         # Controller state
         self.is_running = False
         self.controller_thread = None
@@ -189,10 +192,26 @@ class PresentationController:
             window_title = win32gui.GetWindowText(window).lower()
             
             # Get process name
+            # ⚡ OPTIMIZATION: Cache process name by process ID.
+            # `psutil.Process(process_id).name()` is a slow blocking system call.
+            # `win32process.GetWindowThreadProcessId` is very fast, and PIDs map
+            # to the same process name for their lifespan. Caching the name
+            # significantly reduces CPU overhead and latency during automatic application detection.
             try:
                 _, process_id = win32process.GetWindowThreadProcessId(window)
-                process = psutil.Process(process_id)
-                process_name = process.name().lower()
+
+                # Check cache first
+                if process_id in self._process_cache:
+                    process_name = self._process_cache[process_id]
+                else:
+                    process = psutil.Process(process_id)
+                    process_name = process.name().lower()
+
+                    # Manage cache size to prevent memory leaks over long running sessions
+                    if len(self._process_cache) > 100:
+                        self._process_cache.clear()
+
+                    self._process_cache[process_id] = process_name
             except Exception:
                 process_name = ""
             
