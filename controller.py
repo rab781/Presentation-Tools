@@ -53,6 +53,9 @@ class PresentationController:
         # Sound effects (optional)
         self.sound_enabled = True
         
+        # Cache for process IDs to names to avoid slow psutil calls
+        self._process_name_cache = {}
+
     def start(self):
         """Start controller thread"""
         if self.is_running:
@@ -191,8 +194,18 @@ class PresentationController:
             # Get process name
             try:
                 _, process_id = win32process.GetWindowThreadProcessId(window)
-                process = psutil.Process(process_id)
-                process_name = process.name().lower()
+
+                # ⚡ OPTIMIZATION: Cache process names by PID
+                # `psutil.Process(process_id).name()` is a slow blocking system call.
+                # By caching the resolved names using the PID retrieved from the fast
+                # `win32process.GetWindowThreadProcessId` call, we avoid this expensive
+                # operation on every detection loop iteration.
+                if process_id in self._process_name_cache:
+                    process_name = self._process_name_cache[process_id]
+                else:
+                    process = psutil.Process(process_id)
+                    process_name = process.name().lower()
+                    self._process_name_cache[process_id] = process_name
             except Exception:
                 process_name = ""
             
