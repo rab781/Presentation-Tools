@@ -43,6 +43,11 @@ class PresentationController:
         self.is_running = False
         self.controller_thread = None
         
+        # Performance optimization
+        self._last_window_handle = None
+        self._last_process_name = ""
+        self._last_window_title = ""
+
         # Current application profile
         self.current_app = "universal"
         self.app_profiles = APP_PROFILES
@@ -188,13 +193,24 @@ class PresentationController:
             # Get window title
             window_title = win32gui.GetWindowText(window).lower()
             
-            # Get process name
-            try:
-                _, process_id = win32process.GetWindowThreadProcessId(window)
-                process = psutil.Process(process_id)
-                process_name = process.name().lower()
-            except Exception:
-                process_name = ""
+            # ⚡ OPTIMIZATION: Cache active window details
+            # If the active window and title haven't changed, reuse the cached process name.
+            # This avoids repeated win32process and psutil system calls per frame.
+            if window == getattr(self, '_last_window_handle', None) and window_title == getattr(self, '_last_window_title', None):
+                process_name = getattr(self, '_last_process_name', "")
+            else:
+                # Get process name
+                try:
+                    _, process_id = win32process.GetWindowThreadProcessId(window)
+                    process = psutil.Process(process_id)
+                    process_name = process.name().lower()
+                except Exception:
+                    process_name = ""
+
+                # Update cache
+                self._last_window_handle = window
+                self._last_window_title = window_title
+                self._last_process_name = process_name
             
             print(f"Active window: '{window_title}'")
             print(f"Process: '{process_name}'")
