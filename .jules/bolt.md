@@ -67,3 +67,6 @@
 **Learning:** This older note captured a contrary hypothesis: converting to grayscale before resizing might reduce interpolation work because `cv2.resize` would operate on a single channel instead of three. However, this generalization conflicts with the later measured guidance above. In pipelines that downscale and then operate only on grayscale frames, the current default guidance is to resize first and then call `cv2.cvtColor`, while still benchmarking in the target workload if performance is critical.
 
 **Action:** Treat this entry as historical context only. Follow the 2025-12-24 guidance for current work, and benchmark both orders if a specific pipeline or platform appears to behave differently.
+## 2025-12-25 - [Cache expensive blocking OS calls in loops]
+**Learning:** In `controller.py`, `psutil.Process(process_id).name()` is a slow blocking system call. Resolving the active application name inside a continuous loop caused significant latency.
+**Action:** When repeatedly calling expensive OS-level functions that depend on the active foreground window, cache the result and validate it against the window handle (`HWND`) and title. If the handle and title remain unchanged, reuse the cached process name to drastically reduce overhead while safely avoiding PID reuse edge cases.

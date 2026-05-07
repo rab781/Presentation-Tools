@@ -50,6 +50,11 @@ class PresentationController:
         # Command priority (gesture vs voice)
         self.priority_mode = "hybrid"  # "gesture", "voice", "hybrid"
         
+        # ⚡ OPTIMIZATION: Cache for detect_active_application
+        self._last_window_handle = None
+        self._last_window_title = None
+        self._last_process_name = None
+
         # Sound effects (optional)
         self.sound_enabled = True
         
@@ -189,12 +194,26 @@ class PresentationController:
             window_title = win32gui.GetWindowText(window).lower()
             
             # Get process name
-            try:
-                _, process_id = win32process.GetWindowThreadProcessId(window)
-                process = psutil.Process(process_id)
-                process_name = process.name().lower()
-            except Exception:
-                process_name = ""
+            # ⚡ OPTIMIZATION: Cache process name resolution
+            # psutil.Process(process_id).name() is a slow blocking system call.
+            # By validating against the foreground window handle and title, we can skip
+            # expensive win32process and psutil calls when the window remains unchanged.
+            # This significantly reduces latency in the hot loop while correctly handling PID reuse.
+            # We do not re-order identification logic to check window titles before the process name,
+            # as this causes false positives for browser tabs.
+            if window == self._last_window_handle and window_title == self._last_window_title:
+                process_name = self._last_process_name
+            else:
+                try:
+                    _, process_id = win32process.GetWindowThreadProcessId(window)
+                    process = psutil.Process(process_id)
+                    process_name = process.name().lower()
+                except Exception:
+                    process_name = ""
+
+                self._last_window_handle = window
+                self._last_window_title = window_title
+                self._last_process_name = process_name
             
             print(f"Active window: '{window_title}'")
             print(f"Process: '{process_name}'")
