@@ -53,6 +53,11 @@ class PresentationController:
         # Sound effects (optional)
         self.sound_enabled = True
         
+        # ⚡ OPTIMIZATION: Cache for window process resolution
+        self._last_window = 0
+        self._last_window_title = ""
+        self._cached_process_name = ""
+
     def start(self):
         """Start controller thread"""
         if self.is_running:
@@ -188,13 +193,26 @@ class PresentationController:
             # Get window title
             window_title = win32gui.GetWindowText(window).lower()
             
-            # Get process name
-            try:
-                _, process_id = win32process.GetWindowThreadProcessId(window)
-                process = psutil.Process(process_id)
-                process_name = process.name().lower()
-            except Exception:
-                process_name = ""
+            # ⚡ OPTIMIZATION: Avoid slow psutil system calls by caching process names
+            # psutil.Process(process_id).name() is a slow blocking system call.
+            # We cache the resolved process name and validate it against the foreground
+            # window handle and title to skip expensive win32process and psutil calls
+            # when the window remains unchanged.
+            if window == self._last_window and window_title == self._last_window_title:
+                process_name = self._cached_process_name
+            else:
+                # Get process name
+                try:
+                    _, process_id = win32process.GetWindowThreadProcessId(window)
+                    process = psutil.Process(process_id)
+                    process_name = process.name().lower()
+                except Exception:
+                    process_name = ""
+
+                # Update cache
+                self._last_window = window
+                self._last_window_title = window_title
+                self._cached_process_name = process_name
             
             print(f"Active window: '{window_title}'")
             print(f"Process: '{process_name}'")
