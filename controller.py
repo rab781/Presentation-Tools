@@ -188,13 +188,27 @@ class PresentationController:
             # Get window title
             window_title = win32gui.GetWindowText(window).lower()
             
-            # Get process name
-            try:
-                _, process_id = win32process.GetWindowThreadProcessId(window)
-                process = psutil.Process(process_id)
-                process_name = process.name().lower()
-            except Exception:
-                process_name = ""
+            # ⚡ OPTIMIZATION: Cache process name
+            # psutil.Process(process_id).name() is a slow blocking system call.
+            # Detection latency is optimized by caching the resolved process name,
+            # validating it against the foreground window handle and title to skip
+            # expensive win32process and psutil calls when the window remains unchanged.
+            if hasattr(self, '_last_window') and self._last_window == window and \
+               hasattr(self, '_last_window_title') and self._last_window_title == window_title:
+                process_name = getattr(self, '_last_process_name', "")
+            else:
+                # Get process name
+                try:
+                    _, process_id = win32process.GetWindowThreadProcessId(window)
+                    process = psutil.Process(process_id)
+                    process_name = process.name().lower()
+
+                    # Update cache
+                    self._last_window = window
+                    self._last_window_title = window_title
+                    self._last_process_name = process_name
+                except Exception:
+                    process_name = ""
             
             print(f"Active window: '{window_title}'")
             print(f"Process: '{process_name}'")
