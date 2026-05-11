@@ -51,5 +51,48 @@ class TestControllerOptimization(unittest.TestCase):
         # Verify the beep was actually called in the background
         mock_beep.assert_called_once_with(800, 100)
 
+    @patch('controller.HAS_WIN32', True)
+    @patch('controller.win32gui', create=True)
+    @patch('controller.win32process', create=True)
+    @patch('controller.psutil', create=True)
+    def test_detect_active_application_caching(self, mock_psutil, mock_win32process, mock_win32gui):
+        import controller
+
+        # Setup mocks
+        mock_win32gui.GetForegroundWindow.return_value = 12345
+        mock_win32gui.GetWindowText.return_value = "Google Slides - Google Chrome"
+        mock_win32process.GetWindowThreadProcessId.return_value = (0, 9999)
+        mock_process = MagicMock()
+        mock_process.name.return_value = "chrome.exe"
+        mock_psutil.Process.return_value = mock_process
+
+        c = controller.PresentationController()
+
+        # First call should hit psutil
+        c.detect_active_application()
+        mock_psutil.Process.assert_called_once_with(9999)
+        mock_process.name.assert_called_once()
+
+        # Reset mock
+        mock_psutil.Process.reset_mock()
+        mock_process.name.reset_mock()
+
+        # Second call with same window should use cache
+        c.detect_active_application()
+        mock_psutil.Process.assert_not_called()
+        mock_process.name.assert_not_called()
+
+        # Third call with new window should hit psutil again
+        mock_win32gui.GetForegroundWindow.return_value = 54321
+        mock_win32gui.GetWindowText.return_value = "PowerPoint"
+        mock_win32process.GetWindowThreadProcessId.return_value = (0, 8888)
+        mock_process2 = MagicMock()
+        mock_process2.name.return_value = "powerpnt.exe"
+        mock_psutil.Process.return_value = mock_process2
+
+        c.detect_active_application()
+        mock_psutil.Process.assert_called_once_with(8888)
+        mock_process2.name.assert_called_once()
+
 if __name__ == '__main__':
     unittest.main()
