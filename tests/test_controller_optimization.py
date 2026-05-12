@@ -20,7 +20,8 @@ except ImportError as e:
 
 class TestControllerOptimization(unittest.TestCase):
 
-    @patch('winsound.Beep', create=True)
+    @patch('controller.HAS_WINSOUND', True)
+    @patch('controller.winsound.Beep', create=True)
     def test_play_sound_effect_non_blocking(self, mock_beep):
         # Setup mock Beep to simulate a blocking call (e.g., 100ms delay)
         def mock_blocking_beep(frequency, duration):
@@ -29,7 +30,8 @@ class TestControllerOptimization(unittest.TestCase):
         mock_beep.side_effect = mock_blocking_beep
 
         # Instantiate controller
-        controller = PresentationController()
+        import controller
+        controller = controller.PresentationController()
 
         # Enable sound to ensure the code path is hit
         controller.sound_enabled = True
@@ -49,7 +51,10 @@ class TestControllerOptimization(unittest.TestCase):
         self.assertLess(duration, 0.05, "The main thread was blocked by _play_sound_effect.")
 
         # Verify the beep was actually called in the background
+        # Because we removed the local import in _play_sound_effect, it uses the global winsound module
+        # which is already mocked at sys.modules['winsound'].
         mock_beep.assert_called_once_with(800, 100)
+
 
     @patch('controller.HAS_WIN32', True)
     @patch('controller.win32gui', create=True)
