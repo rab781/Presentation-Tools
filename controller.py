@@ -153,8 +153,6 @@ class PresentationController:
             return
 
         try:
-            # Need to get Beep from the module so it works with patches/mocks
-            import winsound
             frequency = 1000  # Hz
             duration = 100    # ms
             
