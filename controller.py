@@ -26,9 +26,9 @@ try:
 except ImportError:
     HAS_WINSOUND = False
 
-# Disable PyAutoGUI failsafe for better UX
-pyautogui.FAILSAFE = False
-pyautogui.PAUSE = 0.1  # Small pause between actions
+# Enable PyAutoGUI failsafe for security and remove redundant pause
+pyautogui.FAILSAFE = True
+pyautogui.PAUSE = 0.0  # PresentationController provides debouncing
 
 
 class PresentationController:
