@@ -71,3 +71,7 @@
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
+
+## 2025-12-26 - [Removed PyAutoGUI PAUSE and Enabled Failsafe]
+**Learning:** `pyautogui.PAUSE` was set to `0.1`, which added a 100ms delay to every PyAutoGUI call. The `PresentationController` already provides rate-limiting through its `debounce_time` logic (default 0.5s), so this pause is redundant and reduces command throughput. Also, `pyautogui.FAILSAFE` must remain enabled (`True`) to provide an emergency stop mechanism for users; disabling it for UX smoothness is considered a security risk.
+**Action:** Always verify if a library's default throttling or delay is necessary when implementing application-level debouncing, and never disable failsafe mechanisms for minor UX improvements if they compromise security.
