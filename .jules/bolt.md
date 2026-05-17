@@ -71,3 +71,7 @@
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
+
+## 2025-12-25 - [Remove PyAutoGUI redundant pause delay]
+**Learning:** `pyautogui` introduces an implicit `PAUSE` delay of 0.1s (100ms) after every action by default. This redundant blocking delay slows down command responsiveness, especially when the application already has its own application-level rate limiting (`debounce_time`).
+**Action:** Always set `pyautogui.PAUSE = 0.0` when your application handles its own debouncing to maximize command throughput and remove unnecessary 100ms delays in the hot path.
