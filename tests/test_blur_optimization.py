@@ -35,21 +35,19 @@ class TestBlurOptimization(unittest.TestCase):
     def test_in_place_gaussian_blur(self):
         detector = GestureDetector(processing_scale=0.5)
         frame = MagicMock()
-        frame.shape = (480, 640, 3) # Height, Width, Channels
-
-        mock_small_frame = MagicMock()
-        mock_cv2.cvtColor.return_value = mock_small_frame
-        mock_gray_small = MagicMock()
-        mock_cv2.resize.return_value = mock_gray_small
+        frame.shape = (480, 640, 3)
 
         # Call detect_gesture
         detector.detect_gesture(frame, draw_landmarks=False)
 
-        # Verify blur is called with dst=gray_small
-        self.assertTrue(mock_cv2.GaussianBlur.called)
+        # Verify GaussianBlur was called with dst
+        self.assertTrue(mock_cv2.GaussianBlur.called, "cv2.GaussianBlur was not called")
+
+        args = mock_cv2.GaussianBlur.call_args[0]
         kwargs = mock_cv2.GaussianBlur.call_args[1]
-        self.assertIn('dst', kwargs, "cv2.GaussianBlur should be called with 'dst' parameter for in-place optimization")
-        self.assertEqual(kwargs['dst'], mock_gray_small, "dst should be gray_small")
+
+        self.assertIn('dst', kwargs, "cv2.GaussianBlur should use 'dst' parameter to avoid memory allocation")
+        self.assertEqual(kwargs['dst'], args[0], "dst should be the same as the input array")
 
 if __name__ == '__main__':
     unittest.main()
