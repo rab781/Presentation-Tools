@@ -28,7 +28,11 @@ except ImportError:
 
 # Disable PyAutoGUI failsafe for better UX
 pyautogui.FAILSAFE = False
-pyautogui.PAUSE = 0.1  # Small pause between actions
+# ⚡ OPTIMIZATION: Maximize command throughput
+# We set pyautogui.PAUSE to 0.0 because PresentationController already handles
+# rate-limiting via its `debounce_time` (default 0.5s) logic. A forced 100ms
+# delay per action is a redundant blocking overhead on the main loop.
+pyautogui.PAUSE = 0.0  # Remove redundant artificial delay
 
 
 class PresentationController:
