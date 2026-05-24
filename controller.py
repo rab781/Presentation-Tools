@@ -28,7 +28,11 @@ except ImportError:
 
 # Disable PyAutoGUI failsafe for better UX
 pyautogui.FAILSAFE = False
-pyautogui.PAUSE = 0.1  # Small pause between actions
+# ⚡ OPTIMIZATION: Remove redundant delay
+# PyAutoGUI adds a 100ms pause after every action by default.
+# The controller already implements debouncing to limit command rate,
+# so this built-in pause is redundant and artificially increases command latency.
+pyautogui.PAUSE = 0.0  # Maximize command throughput
 
 
 class PresentationController:
