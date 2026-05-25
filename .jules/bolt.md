@@ -71,3 +71,7 @@
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
+
+## 2026-05-20 - [Resize before Grayscale Conversion]
+**Learning:** In the `gesture_detector.py` pipeline, converting a full-resolution 3-channel color image to grayscale before resizing it is computationally slower than resizing the color image first and then converting it to grayscale. Resizing first significantly reduces the number of pixels `cv2.cvtColor` must process, which easily outweighs the slightly higher cost of interpolating 3 channels during the `cv2.resize` step.
+**Action:** When a computer vision pipeline needs to downscale an input frame and convert it to grayscale, always apply `cv2.resize` on the color frame before applying `cv2.cvtColor` to optimize CPU usage and increase FPS.
