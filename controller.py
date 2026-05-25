@@ -36,9 +36,21 @@ pyautogui.PAUSE = 0.0  # Maximize command throughput
 
 
 class PresentationController:
-    """Controls presentation software via keyboard simulation"""
+    """
+    Controls presentation software via keyboard simulation.
+
+    You use this class to execute presentation commands like navigating slides or
+    pausing the presentation. It automatically detects the active presentation
+    application to use the correct keyboard shortcuts.
+    """
     
     def __init__(self, debounce_time=0.5):
+        """
+        Initializes the controller.
+
+        Args:
+            debounce_time (float): The minimum delay between commands in seconds to prevent accidental double actions.
+        """
         self.debounce_time = debounce_time
         self.last_command_time = {}
         self.command_queue = queue.Queue()
@@ -58,7 +70,9 @@ class PresentationController:
         self.sound_enabled = True
         
     def start(self):
-        """Start controller thread"""
+        """
+        Starts the background thread that processes the command queue.
+        """
         if self.is_running:
             return
         
@@ -68,7 +82,9 @@ class PresentationController:
         print("Presentation controller started")
     
     def stop(self):
-        """Stop controller thread"""
+        """
+        Stops the background thread and safely joins it.
+        """
         self.is_running = False
         if self.controller_thread:
             self.controller_thread.join(timeout=2)
@@ -95,7 +111,13 @@ class PresentationController:
                 print(f"Controller error: {e}")
     
     def send_command(self, command: str, source: str = "manual"):
-        """Add command to execution queue"""
+        """
+        Adds a command to the execution queue for processing.
+
+        Args:
+            command (str): The command to execute (e.g., "next", "previous").
+            source (str): The source of the command (e.g., "gesture", "voice", "manual").
+        """
         if not command:
             return
         
@@ -174,7 +196,15 @@ class PresentationController:
             pass  # Sound not critical
     
     def detect_active_application(self) -> str:
-        """Detect currently active presentation application"""
+        """
+        Detects the currently active presentation application.
+
+        It attempts to identify the foreground window using Windows API calls.
+        If it cannot determine the application, it returns the "universal" fallback profile.
+
+        Returns:
+            str: The internal string identifier for the detected application profile.
+        """
         if not HAS_WIN32:
             print("Warning: Required module not installed. Using universal profile.")
             print("Install with: pip install psutil pywin32")
@@ -246,7 +276,12 @@ class PresentationController:
             return "universal"
     
     def set_application(self, app_name: str):
-        """Manually set active application profile"""
+        """
+        Manually sets the active application profile.
+
+        Args:
+            app_name (str): The identifier of the application profile to use (e.g., "powerpoint", "google_slides").
+        """
         if app_name in self.app_profiles:
             self.current_app = app_name
             print(f"Application profile set to: {app_name}")
@@ -255,14 +290,21 @@ class PresentationController:
             self.current_app = "universal"
     
     def auto_detect_application(self):
-        """Automatically detect and set application profile"""
+        """
+        Automatically detects the active presentation application and updates the active profile.
+        """
         detected_app = self.detect_active_application()
         if detected_app != self.current_app:
             self.current_app = detected_app
             print(f"Application detected: {detected_app}")
     
     def get_available_commands(self) -> list:
-        """Get list of available commands for current app"""
+        """
+        Retrieves a list of available commands for the current application profile.
+
+        Returns:
+            list: A list of command strings.
+        """
         profile = self.app_profiles.get(self.current_app, self.app_profiles["universal"])
         return [cmd for cmd, shortcuts in profile.items() if shortcuts]
     
@@ -319,11 +361,21 @@ class PresentationController:
 
 
 class CalibrationWizard:
-    """Helps user calibrate the system"""
+    """
+    Helps you calibrate the system setup.
+
+    You run this wizard to verify that your camera, microphone, and application
+    detection are functioning correctly before starting a presentation.
+    """
     
     @staticmethod
     def run_calibration():
-        """Run calibration wizard"""
+        """
+        Runs the interactive calibration wizard.
+
+        It performs diagnostic tests on the camera, microphone, keyboard simulation,
+        and application detection, outputting the results to the console.
+        """
         print("\n" + "="*50)
         print("CALIBRATION WIZARD")
         print("="*50)
