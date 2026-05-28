@@ -207,37 +207,39 @@ class PresentationController:
                 self._cached_window = window
                 self._cached_window_title = window_title
                 self._cached_process_name = process_name
-            else:
-                process_name = self._cached_process_name
-            
-            print(f"Active window: '{window_title}'")
-            print(f"Process: '{process_name}'")
-            
-            # Match to known applications by process name first (more reliable)
-            if "powerpnt.exe" in process_name or "powerpnt" in process_name:
-                detected = "powerpoint"
-            elif "chrome.exe" in process_name or "msedge.exe" in process_name or "firefox.exe" in process_name:
-                # Browser - check title for specific apps
-                if "google slides" in window_title or "presentation" in window_title:
+
+                # Match to known applications by process name first (more reliable)
+                if "powerpnt.exe" in process_name or "powerpnt" in process_name:
+                    detected = "powerpoint"
+                elif "chrome.exe" in process_name or "msedge.exe" in process_name or "firefox.exe" in process_name:
+                    # Browser - check title for specific apps
+                    if "google slides" in window_title or "presentation" in window_title:
+                        detected = "google_slides"
+                    elif "canva" in window_title:
+                        detected = "canva"
+                    else:
+                        detected = "universal"
+                elif "acrord" in process_name or "acrobat" in process_name or "foxitreader" in process_name:
+                    detected = "pdf_viewer"
+                # Fallback to window title matching
+                elif "powerpoint" in window_title or "pptx" in window_title or ".ppt" in window_title:
+                    detected = "powerpoint"
+                elif "google slides" in window_title:
                     detected = "google_slides"
+                elif "pdf" in window_title or "adobe" in window_title:
+                    detected = "pdf_viewer"
                 elif "canva" in window_title:
                     detected = "canva"
                 else:
                     detected = "universal"
-            elif "acrord" in process_name or "acrobat" in process_name or "foxitreader" in process_name:
-                detected = "pdf_viewer"
-            # Fallback to window title matching
-            elif "powerpoint" in window_title or "pptx" in window_title or ".ppt" in window_title:
-                detected = "powerpoint"
-            elif "google slides" in window_title:
-                detected = "google_slides"
-            elif "pdf" in window_title or "adobe" in window_title:
-                detected = "pdf_viewer"
-            elif "canva" in window_title:
-                detected = "canva"
+
+                self._cached_detected_app = detected
             else:
-                detected = "universal"
+                process_name = self._cached_process_name
+                detected = self._cached_detected_app
             
+            print(f"Active window: '{window_title}'")
+            print(f"Process: '{process_name}'")
             print(f"Detected application profile: {detected}")
             return detected
 
