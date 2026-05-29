@@ -8,7 +8,7 @@
 
 ## Why This Exists
 
-Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software and lets you navigate slides fluidly without breaking your flow.
+Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. You need a way to navigate slides fluidly without breaking your flow. This tool solves this pain by turning your existing webcam and microphone into a universal, hands-free controller that automatically detects your presentation software.
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ python main.py
 
 ## Installation
 
-**Prerequisites**: Python 3.8+ and a working webcam and microphone.
+**Prerequisites**: Python 3.8+, a working webcam, and a microphone.
 
 First, set up a virtual environment to isolate your dependencies.
 
@@ -35,7 +35,7 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-Next, install the required packages. If you use macOS or Linux and see an error about `pywin32`, ignore it. It is a Windows-only package.
+Next, install the required packages. If you use macOS or Linux and see an error about `pywin32`, safely ignore it as it is a Windows-only package.
 
 ```bash
 pip install -r requirements.txt
@@ -80,6 +80,8 @@ Customize the application behavior by creating or editing `user_config.json` in 
 
 #### Hand Gestures
 
+Control the presentation with the following hand gestures:
+
 | Gesture | Command | Action |
 |---------|---------|--------|
 | 👉 Swipe Right | Next | Next slide |
@@ -92,7 +94,7 @@ Customize the application behavior by creating or editing `user_config.json` in 
 
 #### Voice Commands
 
-Use English or Indonesian commands.
+Use English or Indonesian commands to control the presentation.
 
 - **Navigation**: "next", "previous", "back", "first", "last", "start", "end"
 - **Control**: "pause", "stop", "play", "resume", "exit", "quit"
@@ -128,7 +130,7 @@ python main.py --calibrate
 
 ## API Reference
 
-The project exposes a configuration manager that you use programmatically.
+The project exposes a configuration manager that you can use programmatically.
 
 ```python
 from config import config_manager, OperationMode
@@ -145,7 +147,7 @@ For more details on internal modules, refer to the source code docstrings.
 
 ## Contributing
 
-Contributions are welcome! Please submit a Pull Request.
+Contributions are welcome! See how to submit a Pull Request.
 
 1. Fork the project
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
