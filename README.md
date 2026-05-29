@@ -8,7 +8,7 @@
 
 ## Why This Exists
 
-Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software and lets you navigate slides fluidly without breaking your flow.
+You lose clickers, batteries die, and holding a device limits your expressiveness. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller.
 
 ## Quick Start
 
@@ -19,11 +19,30 @@ pip install -r requirements.txt
 python main.py
 ```
 
-## Installation
+## Tutorial: Your First Presentation
 
-**Prerequisites**: Python 3.8+ and a working webcam and microphone.
+**What you build**: A hands-free controller for your presentation.
 
-First, set up a virtual environment to isolate your dependencies.
+**What you learn**:
+- Set up the environment
+- Use gestures to navigate
+
+**Prerequisites**:
+- [ ] Python 3.8+ installed
+- [ ] A working webcam and microphone
+
+---
+
+### Step 1: Set Up Your Project
+
+Clone the repository and navigate into the project directory.
+
+```bash
+git clone https://github.com/rab781/Presentation-Tools.git
+cd Presentation-Tools
+```
+
+Create and activate a virtual environment to isolate your dependencies.
 
 ```bash
 # macOS/Linux
@@ -35,32 +54,50 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-Next, install the required packages. If you use macOS or Linux and see an error about `pywin32`, ignore it. It is a Windows-only package.
+### Step 2: Install Dependencies
+
+Install the required packages. If you use macOS or Linux and see an error about `pywin32`, ignore it. It is a Windows-only package.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> **Tip**: If `pip install pyaudio` fails on Windows, install the pre-compiled binary instead:
-> ```bash
-> pip install pipwin
-> pipwin install pyaudio
-> ```
+> **Tip**: If `pip install pyaudio` fails on Windows, install the pre-compiled binary instead. Run `pip install pipwin` followed by `pipwin install pyaudio`.
 
-## Usage
+### Step 3: Run the Application
 
-### Basic Example
-
-Start the controller by running the main script. Stand 0.5 to 2 meters from your webcam, open your presentation (like PowerPoint or Google Slides), and use gestures or voice to navigate.
+Start the controller. Stand 0.5 to 2 meters from your webcam and open your presentation (like PowerPoint or Google Slides).
 
 ```bash
 python main.py
 ```
 
+You control the presentation immediately:
 - **Swipe right** to go to the next slide.
 - **Say "previous"** to go back.
 
-### Configuration
+## How-To Guides
+
+### Configure Offline Voice Recognition
+
+Configure offline voice commands in Indonesian using a Vosk model to avoid relying on a network connection.
+
+1. Create a `models` directory in the project root.
+2. Download the [Vosk Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip).
+3. Extract the contents into the `models` directory.
+4. Set `"offline_mode": true` in your `user_config.json`.
+
+### Calibrate the Controller
+
+If you experience issues with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
+
+```bash
+python main.py --calibrate
+```
+
+## Reference
+
+### Configuration Options
 
 Customize the application behavior by creating or editing `user_config.json` in the project root.
 
@@ -76,9 +113,7 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | `offline_mode` | `boolean`| `false` | Use local Vosk model for voice recognition instead of Google. |
 | `language` | `string` | `"both"` | Active language: `"english"`, `"indonesian"`, or `"both"`. |
 
-### Advanced Usage
-
-#### Hand Gestures
+### Hand Gestures Mappings
 
 | Gesture | Command | Action |
 |---------|---------|--------|
@@ -90,7 +125,7 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | 👎 Thumbs Down | Last | Last slide |
 | ✌️ Peace Sign | Blackout | Black screen |
 
-#### Voice Commands
+### Voice Commands
 
 Use English or Indonesian commands.
 
@@ -98,15 +133,7 @@ Use English or Indonesian commands.
 - **Control**: "pause", "stop", "play", "resume", "exit", "quit"
 - **Indonesian**: "lanjut", "berikutnya", "kembali", "sebelumnya", "pertama", "terakhir", "berhenti", "jeda", "lanjutkan", "mulai", "keluar"
 
-#### Offline Voice Recognition
-
-Configure offline voice commands in Indonesian using a Vosk model.
-
-1. Create a `models` directory in the project root.
-2. Download the [Vosk Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip).
-3. Extract the contents into the `models` directory.
-
-#### Keyboard Controls
+### Keyboard Controls
 
 While the application runs, press these keys to control the tool:
 
@@ -120,13 +147,7 @@ While the application runs, press these keys to control the tool:
 | **P** | Pause/Resume detection |
 | **ESC** | Exit application |
 
-If you have trouble with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
-
-```bash
-python main.py --calibrate
-```
-
-## API Reference
+### API Reference
 
 The project exposes a configuration manager that you use programmatically.
 
@@ -143,9 +164,15 @@ config_manager.set("debounce_time", 1.0)
 
 For more details on internal modules, refer to the source code docstrings.
 
+## Explanation
+
+### How It Works
+
+The Presentation Control Tool integrates computer vision and speech recognition to monitor your actions. When you perform a gesture or speak a command, the tool translates it into virtual keyboard events. The application automatically detects the active presentation window (like Google Slides or PowerPoint) to ensure commands trigger the correct navigation actions.
+
 ## Contributing
 
-Contributions are welcome! Please submit a Pull Request.
+Contributions are welcome! Submit a Pull Request.
 
 1. Fork the project
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
