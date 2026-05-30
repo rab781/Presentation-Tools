@@ -35,24 +35,26 @@ class TestUIOptimization(unittest.TestCase):
         mock_cv2.reset_mock()
 
     @patch('main.PresentationController')
-    def test_add_weighted_uses_dst(self, mock_controller):
+    def test_ui_uses_bitwise_shift_instead_of_add_weighted(self, mock_controller):
         # Initialize app
         app = PresentationToolApp()
 
         # Create a mock frame
         frame = MagicMock()
         frame.shape = (480, 640, 3)
+        roi_mock = MagicMock()
+
+        # Make the slice return roi_mock
+        frame.__getitem__.return_value = roi_mock
 
         # Call draw UI
         app._draw_ui(frame)
 
-        # Verify addWeighted was called with dst
-        mock_cv2.addWeighted.assert_called_once()
+        # Verify addWeighted was NOT called (we replaced it with bitwise shift)
+        mock_cv2.addWeighted.assert_not_called()
 
-        # Get kwargs from the call
-        kwargs = mock_cv2.addWeighted.call_args[1]
-
-        self.assertIn('dst', kwargs, "cv2.addWeighted should be called with 'dst' parameter for in-place optimization")
+        # Verify the bitwise shift was applied
+        roi_mock.__irshift__.assert_called_once_with(1)
 
 if __name__ == '__main__':
     unittest.main()
