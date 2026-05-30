@@ -58,7 +58,7 @@ python main.py
 ```
 
 - **Swipe right** to go to the next slide.
-- **Say "previous"** to go back.
+- **Say "next"** to go to the next slide.
 
 ### Configuration
 
@@ -69,89 +69,23 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | `mode` | `string` | `"hybrid"` | Operation mode: `"gesture"`, `"voice"`, or `"hybrid"`. |
 | `gesture_sensitivity`| `float` | `0.7` | Confidence threshold for gesture detection (0.0 - 1.0). |
 | `voice_sensitivity` | `float` | `0.6` | Confidence threshold for voice detection (0.0 - 1.0). |
-| `debounce_time` | `float` | `0.5` | Minimum delay between commands in seconds. |
-| `camera_index` | `integer`| `0` | Webcam index (0 for default, 1 for external). |
-| `show_ui` | `boolean`| `true` | Display the real-time camera overlay and status. |
-| `sound_effects` | `boolean`| `true` | Play audio feedback when you issue a command. |
-| `offline_mode` | `boolean`| `false` | Use local Vosk model for voice recognition instead of Google. |
-| `language` | `string` | `"both"` | Active language: `"english"`, `"indonesian"`, or `"both"`. |
 
 ### Advanced Usage
 
-#### Hand Gestures
+For complete gesture and voice command lists, advanced configuration, offline voice recognition setup, and calibration instructions, please refer to the detailed documentation:
 
-| Gesture | Command | Action |
-|---------|---------|--------|
-| 👉 Swipe Right | Next | Next slide |
-| 👈 Swipe Left | Previous | Previous slide |
-| ✋ Open Palm | Pause | Pause/Blackout |
-| ✊ Closed Fist | Play | Resume |
-| 👍 Thumbs Up | First | First slide |
-| 👎 Thumbs Down | Last | Last slide |
-| ✌️ Peace Sign | Blackout | Black screen |
-
-#### Voice Commands
-
-Use English or Indonesian commands.
-
-- **Navigation**: "next", "previous", "back", "first", "last", "start", "end"
-- **Control**: "pause", "stop", "play", "resume", "exit", "quit"
-- **Indonesian**: "lanjut", "berikutnya", "kembali", "sebelumnya", "pertama", "terakhir", "berhenti", "jeda", "lanjutkan", "mulai", "keluar"
-
-#### Offline Voice Recognition
-
-Configure offline voice commands in Indonesian using a Vosk model.
-
-1. Create a `models` directory in the project root.
-2. Download the [Vosk Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip).
-3. Extract the contents into the `models` directory.
-
-#### Keyboard Controls
-
-While the application runs, press these keys to control the tool:
-
-| Key | Function |
-|-----|----------|
-| **G** | Switch to Gesture Only mode |
-| **V** | Switch to Voice Only mode |
-| **H** | Switch to Hybrid mode (default) |
-| **C** | Run calibration wizard |
-| **A** | Auto-detect active application manually |
-| **P** | Pause/Resume detection |
-| **ESC** | Exit application |
-
-If you have trouble with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
-
-```bash
-python main.py --calibrate
-```
+-   [Tutorial: Getting Started](docs/tutorials/getting_started.md)
+-   [How-To: Calibrate Your Setup](docs/how-to/calibrate.md)
+-   [How-To: Offline Voice Recognition](docs/how-to/offline_voice.md)
+-   [Reference: Commands List](docs/reference/commands.md)
 
 ## API Reference
 
-The project exposes a configuration manager that you use programmatically.
-
-```python
-from config import config_manager, OperationMode
-
-# Get a value
-mode = config_manager.get_mode()
-
-# Set a value (automatically saves to user_config.json)
-config_manager.set_mode(OperationMode.GESTURE_ONLY)
-config_manager.set("debounce_time", 1.0)
-```
-
-For more details on internal modules, refer to the source code docstrings.
+See [full API reference →](docs/reference/api.md)
 
 ## Contributing
 
-Contributions are welcome! Please submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 
