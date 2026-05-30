@@ -69,6 +69,12 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | `mode` | `string` | `"hybrid"` | Operation mode: `"gesture"`, `"voice"`, or `"hybrid"`. |
 | `gesture_sensitivity`| `float` | `0.7` | Confidence threshold for gesture detection (0.0 - 1.0). |
 | `voice_sensitivity` | `float` | `0.6` | Confidence threshold for voice detection (0.0 - 1.0). |
+| `debounce_time` | `float` | `0.5` | Minimum delay between commands in seconds. |
+| `camera_index` | `integer`| `0` | Webcam index (0 for default, 1 for external). |
+| `show_ui` | `boolean`| `true` | Display the real-time camera overlay and status. |
+| `sound_effects` | `boolean`| `true` | Play audio feedback when you issue a command. |
+| `offline_mode` | `boolean`| `false` | Use local Vosk model for voice recognition instead of Google. |
+| `language` | `string` | `"both"` | Active language: `"english"`, `"indonesian"`, or `"both"`. |
 
 ### Advanced Usage
 
@@ -78,6 +84,7 @@ For complete gesture and voice command lists, advanced configuration, offline vo
 -   [How-To: Calibrate Your Setup](docs/how-to/calibrate.md)
 -   [How-To: Offline Voice Recognition](docs/how-to/offline_voice.md)
 -   [Reference: Commands List](docs/reference/commands.md)
+-   [Explanation: System Architecture](docs/explanation/architecture.md)
 
 ## API Reference
 
