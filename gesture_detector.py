@@ -76,15 +76,17 @@ class GestureDetector:
         proc_w = int(width * self.processing_scale)
         proc_h = int(height * self.processing_scale)
         
-        # ⚡ OPTIMIZATION: Convert to grayscale before resizing
-        # Converting to grayscale first is highly vectorized and fast. Resizing an image
-        # is an interpolation operation that scales heavily with the number of channels.
-        # Doing grayscale first significantly reduces the interpolation overhead.
+        # ⚡ OPTIMIZATION: Resize before converting to grayscale
+        # Resizing the image first reduces the total number of pixels that need to be
+        # converted to grayscale. This provides a greater performance gain than the
+        # interpolation overhead of resizing a 3-channel image versus a 1-channel image.
 
-        if not hasattr(self, 'gray_full_buffer') or self.gray_full_buffer.shape[:2] != (height, width):
-            self.gray_full_buffer = np.empty((height, width), dtype=getattr(frame, 'dtype', np.uint8))
+        if not hasattr(self, 'frame_small_buffer') or self.frame_small_buffer.shape[:2] != (proc_h, proc_w):
+            channels = frame.shape[2] if len(frame.shape) > 2 else 1
+            shape = (proc_h, proc_w, channels) if channels > 1 else (proc_h, proc_w)
+            self.frame_small_buffer = np.empty(shape, dtype=getattr(frame, 'dtype', np.uint8))
 
-        gray_full = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY, dst=self.gray_full_buffer)
+        frame_small = cv2.resize(frame, (proc_w, proc_h), dst=self.frame_small_buffer)
 
         # ⚡ OPTIMIZATION: Double-buffering for the downscaled grayscale image
         # We use a double-buffering scheme for the final downscaled frame because `self.prev_frame`
@@ -99,8 +101,8 @@ class GestureDetector:
             curr_buffer = np.empty((proc_h, proc_w), dtype=np.uint8)
             self.gray_small_buffers[self.buffer_idx] = curr_buffer
 
-        # Downscale the grayscale image
-        gray_small = cv2.resize(gray_full, (proc_w, proc_h), dst=curr_buffer)
+        # Convert the downscaled frame to grayscale
+        gray_small = cv2.cvtColor(frame_small, cv2.COLOR_BGR2GRAY, dst=curr_buffer)
 
         # Swap buffer index for the next frame
         self.buffer_idx = 1 - self.buffer_idx
