@@ -71,3 +71,7 @@
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
+
+## 2025-12-24 - [Optimize cvtColor by Resizing First]
+**Learning:** In computer vision pipelines that downscale multi-channel color frames, resizing the frame (`cv2.resize`) *before* converting it to grayscale (`cv2.cvtColor`) is significantly faster. The reduced pixel count for the color conversion step provides a greater performance gain than the interpolation overhead of resizing a 3-channel image versus a 1-channel image.
+**Action:** When downscaling an image and converting to grayscale, always call `cv2.resize` first and then `cv2.cvtColor`.
