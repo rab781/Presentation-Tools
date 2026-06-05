@@ -80,8 +80,13 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify resize and cvtColor calls
         # Expected size: width=320 (640*0.5), height=240 (480*0.5)
         # Note: cv2.resize takes (width, height)
-        # We now convert to grayscale before resizing
-        self.assertEqual(mock_cv2.resize.call_args[0][0], mock_gray_full)
+        # We now resize before converting to grayscale
+        # Wait, cv2.flip modifies the frame using dst, so we check that
+        flip_dst = mock_cv2.flip.call_args[1].get('dst')
+        if flip_dst is not None:
+            self.assertEqual(mock_cv2.resize.call_args[0][0], flip_dst)
+        else:
+            self.assertEqual(mock_cv2.resize.call_args[0][0], frame)
         self.assertEqual(mock_cv2.resize.call_args[0][1], (320, 240))
 
     def test_coordinate_scaling(self):
