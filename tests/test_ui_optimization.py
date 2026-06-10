@@ -35,7 +35,7 @@ class TestUIOptimization(unittest.TestCase):
         mock_cv2.reset_mock()
 
     @patch('main.PresentationController')
-    def test_add_weighted_uses_dst(self, mock_controller):
+    def test_add_weighted_not_used_for_dimming(self, mock_controller):
         # Initialize app
         app = PresentationToolApp()
 
@@ -43,16 +43,15 @@ class TestUIOptimization(unittest.TestCase):
         frame = MagicMock()
         frame.shape = (480, 640, 3)
 
+        # Ensure the slice can handle the inplace right shift (>>=)
+        roi_mock = MagicMock()
+        frame.__getitem__.return_value = roi_mock
+
         # Call draw UI
         app._draw_ui(frame)
 
-        # Verify addWeighted was called with dst
-        mock_cv2.addWeighted.assert_called_once()
-
-        # Get kwargs from the call
-        kwargs = mock_cv2.addWeighted.call_args[1]
-
-        self.assertIn('dst', kwargs, "cv2.addWeighted should be called with 'dst' parameter for in-place optimization")
+        # Verify addWeighted is NOT called, as we should use bitwise right shift instead
+        mock_cv2.addWeighted.assert_not_called()
 
 if __name__ == '__main__':
     unittest.main()
