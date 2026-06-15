@@ -42,17 +42,17 @@ class TestUIOptimization(unittest.TestCase):
         # Create a mock frame
         frame = MagicMock()
         frame.shape = (480, 640, 3)
+        mock_roi = MagicMock()
+        frame.__getitem__.return_value = mock_roi
 
         # Call draw UI
         app._draw_ui(frame)
 
-        # Verify addWeighted was called with dst
-        mock_cv2.addWeighted.assert_called_once()
+        # Verify addWeighted was not called
+        mock_cv2.addWeighted.assert_not_called()
 
-        # Get kwargs from the call
-        kwargs = mock_cv2.addWeighted.call_args[1]
-
-        self.assertIn('dst', kwargs, "cv2.addWeighted should be called with 'dst' parameter for in-place optimization")
+        # Verify bitwise shift was used
+        mock_roi.__irshift__.assert_called_once_with(1)
 
 if __name__ == '__main__':
     unittest.main()
