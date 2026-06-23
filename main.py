@@ -172,12 +172,11 @@ class PresentationToolApp:
         # We also pass dst=roi to cv2.addWeighted to perform the blend in-place,
         # avoiding an additional array allocation for the result.
         roi = frame[0:120, 0:w]
-        # ⚡ OPTIMIZATION: In-place alpha blending
-        # By passing `dst=roi` to cv2.addWeighted, we perform the blending operation
-        # directly in the memory of the original frame's slice if possible, avoiding
-        # an intermediate array allocation. We assign the result back to the frame slice
-        # to ensure the UI updates correctly even if OpenCV falls back to out-of-place execution.
-        frame[0:120, 0:w] = cv2.addWeighted(roi, 0.4, roi, 0, 0, dst=roi)
+        # ⚡ OPTIMIZATION: In-place bitwise right shift for UI dimming
+        # Replacing cv2.addWeighted with a bitwise right shift (roi >>= 1) halves
+        # pixel values, achieving a ~0.5 opacity effect without floating-point math
+        # or new array allocations. This is significantly faster for UI rendering.
+        roi >>= 1
         
         # Title
         cv2.putText(frame, "Presentation Controller", (10, 30),
