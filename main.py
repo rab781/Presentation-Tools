@@ -166,18 +166,15 @@ class PresentationToolApp:
         # the whole image, we only extract the Region of Interest (ROI) for
         # the top banner (120 pixels) and blend just that section.
         # This prevents an expensive memory allocation (frame.copy()) and
-        # reduces the area processed by cv2.addWeighted, saving CPU cycles and
+        # reduces the area processed by blending, saving CPU cycles and
         # reducing garbage collection overhead per frame.
         # Expected Impact: Eliminates one full frame allocation and reduces blending computations by ~75% (for 480p).
-        # We also pass dst=roi to cv2.addWeighted to perform the blend in-place,
-        # avoiding an additional array allocation for the result.
         roi = frame[0:120, 0:w]
-        # ⚡ OPTIMIZATION: In-place alpha blending
-        # By passing `dst=roi` to cv2.addWeighted, we perform the blending operation
-        # directly in the memory of the original frame's slice if possible, avoiding
-        # an intermediate array allocation. We assign the result back to the frame slice
-        # to ensure the UI updates correctly even if OpenCV falls back to out-of-place execution.
-        frame[0:120, 0:w] = cv2.addWeighted(roi, 0.4, roi, 0, 0, dst=roi)
+        # ⚡ OPTIMIZATION: In-place bitwise shifting for simple UI dimming
+        # Using an in-place bitwise right shift (roi >>= 1) halves pixel values (~0.5 opacity)
+        # without requiring heavy floating-point operations from cv2.addWeighted.
+        # Since roi is a view of frame, this operation safely mutates the original frame.
+        roi >>= 1
         
         # Title
         cv2.putText(frame, "Presentation Controller", (10, 30),
