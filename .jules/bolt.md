@@ -71,3 +71,7 @@
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
+
+## 2025-12-25 - [Cache Application Profile Resolution]
+**Learning:** In `controller.py`, while the process ID resolution was previously cached, evaluating the string matching rules (e.g., `if "powerpnt.exe" in process_name`) on every frame loop still introduced unnecessary CPU overhead when the active window hasn't changed.
+**Action:** Cache the final detected application profile (`detected_app`) alongside the window handle and title to avoid repetitive string matching on cache hits.
