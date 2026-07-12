@@ -71,3 +71,7 @@
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
+
+## 2025-12-25 - [Optimize UI dimming with bitwise right shift]
+**Learning:** In `main.py`, the UI dimming effect was previously achieved using `cv2.addWeighted`, which performs expensive floating-point multiplications on the image array. A simpler and significantly faster alternative for a ~0.5 opacity effect is an in-place bitwise right shift (`roi >>= 1`). Since `roi` is an array slice view of `frame`, the bitwise operation automatically mutates the original `frame`, eliminating the need to explicitly assign it back (e.g., `frame[...] = roi` is redundant).
+**Action:** Use bitwise right shifts (`>>=`) for simple dimming effects instead of `cv2.addWeighted` to avoid floating-point math overhead, and remember that in-place operations on NumPy slice views inherently mutate the original array.
