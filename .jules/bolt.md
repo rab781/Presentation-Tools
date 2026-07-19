@@ -71,3 +71,6 @@
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
+## 2025-12-26 - [Fast UI dimming with bitwise shift]
+**Learning:** `cv2.addWeighted` is computationally expensive for simple semi-transparent UI dimming effects because it performs floating-point multiplications across all pixels in the region. Using an in-place bitwise right shift (`roi >>= 1`) provides an incredibly fast ~0.5 alpha blend by simply halving the pixel values using integer math.
+**Action:** Replace `cv2.addWeighted` with bitwise right shifts (`>>= 1`) for simple UI dimming overlays when exact blending ratios are not strictly required, to significantly reduce CPU overhead and avoid floating-point math.
