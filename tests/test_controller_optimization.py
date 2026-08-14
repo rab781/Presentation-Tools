@@ -83,7 +83,8 @@ class TestControllerOptimization(unittest.TestCase):
         mock_process.name.reset_mock()
 
         # Second call with same window should use cache
-        c.detect_active_application()
+        result = c.detect_active_application()
+        self.assertEqual(result, "google_slides")
         mock_psutil.Process.assert_not_called()
         mock_process.name.assert_not_called()
 
