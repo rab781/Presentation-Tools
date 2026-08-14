@@ -190,25 +190,25 @@ class PresentationController:
             # Get window title
             window_title = win32gui.GetWindowText(window).lower()
             
-            # ⚡ OPTIMIZATION: Cache process resolution
+            # ⚡ OPTIMIZATION: Cache process resolution and profile detection
             # Calling win32process and psutil.Process is expensive due to system calls.
-            # We can cache the detected process name based on the window handle and title.
-            # If the foreground window handle and title haven't changed, the underlying
-            # process is highly likely the same, allowing us to skip the slow blocking calls.
-            if not hasattr(self, '_cached_window') or self._cached_window != window or self._cached_window_title != window_title:
-                # Get process name
-                try:
-                    _, process_id = win32process.GetWindowThreadProcessId(window)
-                    process = psutil.Process(process_id)
-                    process_name = process.name().lower()
-                except Exception:
-                    process_name = ""
+            # We can cache the detected process name and final profile based on the window
+            # handle and title. If the foreground window hasn't changed, we can skip the
+            # slow blocking calls and the repetitive string matching rules entirely.
+            if hasattr(self, '_cached_window') and self._cached_window == window and self._cached_window_title == window_title:
+                return self._cached_detected_app
 
-                self._cached_window = window
-                self._cached_window_title = window_title
-                self._cached_process_name = process_name
-            else:
-                process_name = self._cached_process_name
+            # Get process name
+            try:
+                _, process_id = win32process.GetWindowThreadProcessId(window)
+                process = psutil.Process(process_id)
+                process_name = process.name().lower()
+            except Exception:
+                process_name = ""
+
+            self._cached_window = window
+            self._cached_window_title = window_title
+            self._cached_process_name = process_name
             
             print(f"Active window: '{window_title}'")
             print(f"Process: '{process_name}'")
@@ -238,6 +238,7 @@ class PresentationController:
             else:
                 detected = "universal"
             
+            self._cached_detected_app = detected
             print(f"Detected application profile: {detected}")
             return detected
 
