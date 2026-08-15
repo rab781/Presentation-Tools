@@ -75,3 +75,7 @@
 ## 2025-12-26 - [In-place bitwise shifts for alpha blending]
 **Learning:** For simple semi-transparent UI dimming effects in Python/OpenCV pipelines, using NumPy in-place bitwise right shifts (e.g., `roi >>= 1` to halve pixel values for ~0.5 opacity) is computationally much faster than using `cv2.addWeighted`, effectively avoiding heavy float multiplications. Replacing `cv2.addWeighted` with a bitwise right shift slightly alters the visual brightness, which is an acceptable compromise for the performance optimization.
 **Action:** Use bitwise right shift instead of `cv2.addWeighted` for UI dimming optimization to reduce computational cost.
+
+## 2025-12-27 - [Cache final application profile evaluation]
+**Learning:** In `controller.py`, caching the final detected application profile (`detected_app`) alongside the window handle and title avoids repetitive and expensive string matching rule evaluations (`if`/`elif`) when the active window hasn't changed.
+**Action:** When a series of expensive string matching rules depend entirely on state that is already being cached (e.g. process name and window title), evaluate the rules once and cache the final derived result alongside the raw state to minimize CPU overhead in hot loops.
