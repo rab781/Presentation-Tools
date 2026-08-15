@@ -8,7 +8,7 @@
 
 ## Why This Exists
 
-Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software and lets you navigate slides fluidly without breaking your flow.
+Clickers get lost, batteries die, and holding a device limits your expressiveness. You need your hands free to present naturally. This tool solves this by turning your webcam and microphone into a universal controller, letting you navigate slides seamlessly without breaking your flow.
 
 ## Quick Start
 
@@ -23,7 +23,7 @@ python main.py
 
 **Prerequisites**: Python 3.8+ and a working webcam and microphone.
 
-First, set up a virtual environment to isolate your dependencies.
+Set up a virtual environment to isolate your project dependencies:
 
 ```bash
 # macOS/Linux
@@ -35,13 +35,15 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-Next, install the required packages. If you use macOS or Linux and see an error about `pywin32`, ignore it. It is a Windows-only package.
+Install the required packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> **Tip**: If `pip install pyaudio` fails on Windows, install the pre-compiled binary instead:
+> **Tip**: If you see an error about `pywin32` on macOS or Linux, ignore it. This package is Windows-only and the tool functions correctly without it.
+>
+> If `pip install pyaudio` fails on Windows with a build error, install the pre-compiled binary instead:
 > ```bash
 > pip install pipwin
 > pipwin install pyaudio
@@ -51,7 +53,7 @@ pip install -r requirements.txt
 
 ### Basic Example
 
-Start the controller by running the main script. Stand 0.5 to 2 meters from your webcam, open your presentation (like PowerPoint or Google Slides), and use gestures or voice to navigate.
+Start the controller by running the main script. Stand 0.5 to 2 meters from your webcam, open your presentation software (like PowerPoint or Google Slides), and use gestures or voice to navigate.
 
 ```bash
 python main.py
@@ -70,7 +72,7 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | `gesture_sensitivity`| `float` | `0.7` | Confidence threshold for gesture detection (0.0 - 1.0). |
 | `voice_sensitivity` | `float` | `0.6` | Confidence threshold for voice detection (0.0 - 1.0). |
 | `debounce_time` | `float` | `0.5` | Minimum delay between commands in seconds. |
-| `camera_index` | `integer`| `0` | Webcam index (0 for default, 1 for external). |
+| `camera_index` | `integer`| `0` | Webcam index (`0` for default, `1` for external). |
 | `show_ui` | `boolean`| `true` | Display the real-time camera overlay and status. |
 | `sound_effects` | `boolean`| `true` | Play audio feedback when you issue a command. |
 | `offline_mode` | `boolean`| `false` | Use local Vosk model for voice recognition instead of Google. |
@@ -120,7 +122,7 @@ While the application runs, press these keys to control the tool:
 | **P** | Pause/Resume detection |
 | **ESC** | Exit application |
 
-If you have trouble with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
+If gestures or voice commands fail to register, run the calibration wizard. This tests your hardware and provides optimal sensitivity settings for your environment.
 
 ```bash
 python main.py --calibrate
@@ -145,7 +147,7 @@ For more details on internal modules, refer to the source code docstrings.
 
 ## Contributing
 
-Contributions are welcome! Please submit a Pull Request.
+You can contribute by submitting a Pull Request.
 
 1. Fork the project
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
