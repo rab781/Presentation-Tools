@@ -136,9 +136,12 @@ def benchmark():
     print("="*60)
 
     # Create a fake frame
-    frame = MagicMock()
-    frame.shape = (480, 640, 3)
-    frame.size = 640 * 480 * 3
+    if 'cv2' in sys.modules and type(sys.modules['cv2']).__name__ == 'module':
+        frame = np.zeros((480, 640, 3), dtype=np.uint8)
+    else:
+        frame = MagicMock()
+        frame.shape = (480, 640, 3)
+        frame.size = 640 * 480 * 3
 
     # Test with default settings (full resolution)
     try:
