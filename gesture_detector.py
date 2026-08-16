@@ -25,6 +25,25 @@ class GestureDetector:
         self.min_area = 5000 * (self.processing_scale ** 2)
         self.inv_processing_scale = 1.0 / self.processing_scale if self.processing_scale != 0 else 1.0
         
+        # ⚡ OPTIMIZATION: Pre-calculate contour scaling function
+        # Scaling the contour array directly using a float multiplier is expensive because
+        # it promotes the int array to float, requiring a subsequent astype(int32) cast.
+        # If the inverse scale is an integer (and especially a power of 2 like 2 for a 0.5 scale),
+        # we can use significantly faster operations like bitwise shifts or integer multiplication.
+        import math
+        if self.inv_processing_scale.is_integer():
+            inv_scale_int = int(self.inv_processing_scale)
+            if inv_scale_int > 0 and (inv_scale_int & (inv_scale_int - 1)) == 0:
+                # Power of 2: Use bitwise left shift (fastest)
+                shift_val = int(math.log2(inv_scale_int))
+                self.scale_contour = lambda contour: contour << shift_val
+            else:
+                # Integer: Use integer multiplication (faster than float)
+                self.scale_contour = lambda contour: contour * inv_scale_int
+        else:
+            # Float: Fallback to float multiplication and casting
+            self.scale_contour = lambda contour: (contour * self.inv_processing_scale).astype(np.int32)
+
         # Gesture tracking
         self.last_gesture = None
         self.last_gesture_time = 0
@@ -176,8 +195,7 @@ class GestureDetector:
                     if draw_landmarks:
                         cv2.circle(frame, (cx, cy), 10, (0, 255, 0), -1)
                         # Scale contour for drawing
-                        scaled_contour = largest_contour * self.inv_processing_scale
-                        scaled_contour = scaled_contour.astype(np.int32)
+                        scaled_contour = self.scale_contour(largest_contour)
                         cv2.drawContours(frame, [scaled_contour], -1, (0, 255, 0), 2)
         
         self.prev_frame = gray_small

@@ -79,3 +79,7 @@
 ## 2025-12-27 - [Cache final application profile evaluation]
 **Learning:** In `controller.py`, caching the final detected application profile (`detected_app`) alongside the window handle and title avoids repetitive and expensive string matching rule evaluations (`if`/`elif`) when the active window hasn't changed.
 **Action:** When a series of expensive string matching rules depend entirely on state that is already being cached (e.g. process name and window title), evaluate the rules once and cache the final derived result alongside the raw state to minimize CPU overhead in hot loops.
+
+## 2025-12-28 - [Optimizing array scaling with bitwise shifts]
+**Learning:** Scaling large NumPy arrays (like contours) using a float multiplier is expensive because it promotes the entire integer array to a float array, requiring a slow `astype(np.int32)` cast afterward to restore the integer type for drawing functions. For inverse scaling factors that are powers of 2 (e.g., upscaling by 2.0 because processing scale is 0.5), using an in-place bitwise left shift (e.g. `contour << 1`) avoids float promotion completely and is nearly 3x faster.
+**Action:** When scaling arrays dynamically, evaluate the scale factor during initialization. Pre-calculate and assign a lambda function that uses the fastest viable method for that specific scale (bitwise shift for powers of 2, integer multiplication for other integers, and only falling back to float multiplication and casting when necessary).
