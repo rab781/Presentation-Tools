@@ -58,19 +58,16 @@ class TestGestureOptimization(unittest.TestCase):
         frame.shape = (480, 640, 3) # Height, Width, Channels
 
         # Setup mock returns
-        mock_gray_full = MagicMock()
-        mock_cv2.cvtColor.return_value = mock_gray_full
-        mock_cv2.resize.return_value = MagicMock()
+        mock_color_small = MagicMock()
+        mock_cv2.resize.return_value = mock_color_small
 
-        # Mock resize so that it returns an object with shape, then GaussianBlur uses that
-        mock_resized_gray = MagicMock()
-        mock_resized_gray.shape = (240, 320)
+        mock_gray_small = MagicMock()
+        mock_gray_small.shape = (240, 320)
+        mock_cv2.cvtColor.return_value = mock_gray_small
 
         # Gaussian blur should return the mocked resized gray to ensure shape persists
-        mock_cv2.GaussianBlur.return_value = mock_resized_gray
+        mock_cv2.GaussianBlur.return_value = mock_gray_small
 
-        # We need resize to return a mock but it should let us check its arguments.
-        mock_cv2.resize.return_value = mock_resized_gray
         mock_cv2.findContours.return_value = ([], None)
         mock_cv2.threshold.return_value = (None, MagicMock())
 
@@ -80,9 +77,20 @@ class TestGestureOptimization(unittest.TestCase):
         # Verify resize and cvtColor calls
         # Expected size: width=320 (640*0.5), height=240 (480*0.5)
         # Note: cv2.resize takes (width, height)
-        # We now convert to grayscale before resizing
-        self.assertEqual(mock_cv2.resize.call_args[0][0], mock_gray_full)
+        # We now resize before converting to grayscale
+        # Assert against the mock's return value for cv2.flip
+        # Since cv2.flip may have been called directly or return a modified reference in some mocks,
+        # we can assert that cv2.resize was called with whatever flip_buffer or result flip returned.
+        # However, looking at gesture_detector, it calls cv2.flip(frame, 1, dst=self.flip_buffer)
+        # so frame is updated to that return value. We can just use detector.flip_buffer if it exists,
+        # or just extract what it was called with.
+
+        resize_call_arg = mock_cv2.resize.call_args[0][0]
+        # In our mock setUp, mock_flip returns dst if provided, which is detector.flip_buffer
+        self.assertEqual(resize_call_arg, detector.flip_buffer)
+
         self.assertEqual(mock_cv2.resize.call_args[0][1], (320, 240))
+        self.assertEqual(mock_cv2.cvtColor.call_args[0][0], mock_color_small)
 
     def test_coordinate_scaling(self):
         detector = GestureDetector(processing_scale=0.5)
