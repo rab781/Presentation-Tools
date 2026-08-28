@@ -62,12 +62,6 @@
 **Learning:** In computer vision pipelines, resizing a full-resolution 3-channel color image *before* converting it to grayscale is faster than converting the full-resolution image to grayscale and then resizing it. This is because `cv2.cvtColor` processing time scales with the number of pixels, and reducing the resolution first significantly decreases the number of pixels it must process, out-weighing the slightly higher cost of resizing 3 channels vs 1 channel.
 **Action:** When a pipeline downscales the input frame and requires grayscale, always apply `cv2.resize` to the color frame *before* applying `cv2.cvtColor` to optimize CPU usage.
 
-## 2024-05-02 - [Superseded] Grayscale then Resize is Faster
-
-**Learning:** This older note captured a contrary hypothesis: converting to grayscale before resizing might reduce interpolation work because `cv2.resize` would operate on a single channel instead of three. However, this generalization conflicts with the later measured guidance above. In pipelines that downscale and then operate only on grayscale frames, the current default guidance is to resize first and then call `cv2.cvtColor`, while still benchmarking in the target workload if performance is critical.
-
-**Action:** Treat this entry as historical context only. Follow the 2025-12-24 guidance for current work, and benchmark both orders if a specific pipeline or platform appears to behave differently.
-
 ## 2025-12-25 - [Process Resolution Caching Bottleneck]
 **Learning:** `controller.py` calls `win32process.GetWindowThreadProcessId` and `psutil.Process` on every iteration of the main loop. These are blocking system calls that cause significant latency and limit FPS when checking the active application window.
 **Action:** Cache the process name using the foreground window handle and title as the cache key. Only call `psutil.Process` when the window handle or title changes to skip expensive blocking calls during standard operation.
