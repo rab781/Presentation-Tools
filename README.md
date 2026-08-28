@@ -1,6 +1,6 @@
 # Presentation Control Tool
 
-> Control your presentations hands-free using hand gestures and voice commands.
+> Turn your webcam and microphone into a hands-free presentation controller so you present naturally without clickers.
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-green)
@@ -8,7 +8,7 @@
 
 ## Why This Exists
 
-Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software and lets you navigate slides fluidly without breaking your flow.
+Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this pain by turning your existing webcam and microphone into a universal controller. It automatically detects your presentation software and lets you navigate slides fluidly without breaking your flow.
 
 ## Quick Start
 
@@ -35,7 +35,7 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-Next, install the required packages. If you use macOS or Linux and see an error about `pywin32`, ignore it. It is a Windows-only package.
+Next, install the required packages. If you see an error about `pywin32` on macOS or Linux, ignore it. It is a Windows-only package.
 
 ```bash
 pip install -r requirements.txt
@@ -120,7 +120,7 @@ While the application runs, press these keys to control the tool:
 | **P** | Pause/Resume detection |
 | **ESC** | Exit application |
 
-If you have trouble with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
+If you encounter issues with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
 
 ```bash
 python main.py --calibrate

@@ -153,14 +153,24 @@ CONFIG_FILE = "user_config.json"
 
 
 class ConfigManager:
-    """Manages user configuration with persistence"""
+    """
+    Manages user configuration state and persists it to a local JSON file.
+
+    You use this class to retrieve and update settings across the application.
+    The configuration is automatically loaded from `user_config.json` upon initialization.
+    """
     
     def __init__(self):
+        """Initializes the configuration manager with default values and loads user settings if they exist."""
         self.config = DEFAULT_CONFIG.copy()
         self.load_config()
     
     def load_config(self):
-        """Load configuration from file"""
+        """
+        Loads the configuration from the `user_config.json` file.
+
+        If the file does not exist or cannot be parsed, it falls back to the default configuration.
+        """
         if os.path.exists(CONFIG_FILE):
             try:
                 with open(CONFIG_FILE, 'r') as f:
@@ -170,7 +180,11 @@ class ConfigManager:
                 print(f"Error loading config: {e}. Using defaults.")
     
     def save_config(self):
-        """Save configuration to file"""
+        """
+        Saves the current configuration to the `user_config.json` file.
+
+        This is called automatically when you update a setting via `set()`.
+        """
         try:
             with open(CONFIG_FILE, 'w') as f:
                 json.dump(self.config, f, indent=4)
@@ -178,21 +192,46 @@ class ConfigManager:
             print(f"Error saving config: {e}")
     
     def get(self, key, default=None):
-        """Get configuration value"""
+        """
+        Retrieves a configuration value.
+
+        Args:
+            key (str): The configuration key to retrieve.
+            default (any, optional): The value to return if the key is not found. Defaults to None.
+
+        Returns:
+            any: The configuration value or the default.
+        """
         return self.config.get(key, default)
     
     def set(self, key, value):
-        """Set configuration value"""
+        """
+        Updates a configuration value and saves it to disk.
+
+        Args:
+            key (str): The configuration key to update.
+            value (any): The new value to set.
+        """
         self.config[key] = value
         self.save_config()
     
     def get_mode(self):
-        """Get current operation mode"""
+        """
+        Retrieves the current operation mode.
+
+        Returns:
+            OperationMode: An enum representing the current active mode.
+        """
         mode_str = self.config.get("mode", OperationMode.HYBRID.value)
         return OperationMode(mode_str)
     
     def set_mode(self, mode: OperationMode):
-        """Set operation mode"""
+        """
+        Sets the operation mode and saves it to disk.
+
+        Args:
+            mode (OperationMode): The new operation mode to set.
+        """
         self.set("mode", mode.value)
 
 
