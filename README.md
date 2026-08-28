@@ -1,6 +1,6 @@
 # Presentation Control Tool
 
-> Control your presentations hands-free using hand gestures and voice commands.
+> A universal presentation controller that turns your webcam and microphone into a hands-free presentation clicker using computer vision and voice recognition.
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-green)
@@ -8,9 +8,11 @@
 
 ## Why This Exists
 
-Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software and lets you navigate slides fluidly without breaking your flow.
+Presenting shouldn't tie you to a keyboard or a physical clicker. Physical clickers get lost, their batteries die unexpectedly, and holding a device limits your physical expressiveness. The Presentation Control Tool solves this by allowing you to navigate slides naturally using simple hand gestures or voice commands, keeping your hands free to present.
 
 ## Quick Start
+
+Get the controller running locally in under 3 minutes.
 
 ```bash
 git clone https://github.com/rab781/Presentation-Tools.git
@@ -19,11 +21,16 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Stand back from your camera, open any presentation software, and **swipe right** in the air or say **"next"** to advance your slides.
+
 ## Installation
 
-**Prerequisites**: Python 3.8+ and a working webcam and microphone.
+**Prerequisites**:
+- Python 3.8+
+- A working webcam
+- A working microphone
 
-First, set up a virtual environment to isolate your dependencies.
+We recommend setting up a virtual environment to isolate the project dependencies.
 
 ```bash
 # macOS/Linux
@@ -35,13 +42,15 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-Next, install the required packages. If you use macOS or Linux and see an error about `pywin32`, ignore it. It is a Windows-only package.
+Install the required packages.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> **Tip**: If `pip install pyaudio` fails on Windows, install the pre-compiled binary instead:
+> **Note for macOS/Linux Users**: If you see an error about `pywin32` during installation, you can safely ignore it. This package is Windows-specific for active application detection.
+
+> **Note for Windows Users**: If `pip install pyaudio` fails, install the pre-compiled binary instead:
 > ```bash
 > pip install pipwin
 > pipwin install pyaudio
@@ -51,34 +60,44 @@ pip install -r requirements.txt
 
 ### Basic Example
 
-Start the controller by running the main script. Stand 0.5 to 2 meters from your webcam, open your presentation (like PowerPoint or Google Slides), and use gestures or voice to navigate.
+To start controlling your presentations, run the main script. The tool automatically detects your active application (PowerPoint, Google Slides, Canva, PDF Viewer) and maps the appropriate keyboard shortcuts.
 
 ```bash
 python main.py
 ```
 
-- **Swipe right** to go to the next slide.
-- **Say "previous"** to go back.
+Stand 0.5 to 2 meters from your webcam. You can now use gestures or voice to navigate.
+
+**Most common commands:**
+- **Swipe right** in front of the camera: Next slide.
+- **Swipe left** in front of the camera: Previous slide.
+- Say **"next"**: Next slide.
+
+If you encounter accuracy issues with gestures or voice recognition, run the calibration wizard:
+
+```bash
+python main.py --calibrate
+```
 
 ### Configuration
 
-Customize the application behavior by creating or editing `user_config.json` in the project root.
+You customize the application behavior by creating or editing a `user_config.json` file in the project root directory.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `mode` | `string` | `"hybrid"` | Operation mode: `"gesture"`, `"voice"`, or `"hybrid"`. |
 | `gesture_sensitivity`| `float` | `0.7` | Confidence threshold for gesture detection (0.0 - 1.0). |
 | `voice_sensitivity` | `float` | `0.6` | Confidence threshold for voice detection (0.0 - 1.0). |
-| `debounce_time` | `float` | `0.5` | Minimum delay between commands in seconds. |
+| `debounce_time` | `float` | `0.5` | Minimum delay between commands in seconds to prevent double triggers. |
 | `camera_index` | `integer`| `0` | Webcam index (0 for default, 1 for external). |
 | `show_ui` | `boolean`| `true` | Display the real-time camera overlay and status. |
-| `sound_effects` | `boolean`| `true` | Play audio feedback when you issue a command. |
+| `sound_effects` | `boolean`| `true` | Play audio feedback when you successfully issue a command. |
 | `offline_mode` | `boolean`| `false` | Use local Vosk model for voice recognition instead of Google. |
-| `language` | `string` | `"both"` | Active language: `"english"`, `"indonesian"`, or `"both"`. |
+| `language` | `string` | `"both"` | Active language for voice recognition: `"english"`, `"indonesian"`, or `"both"`. |
 
 ### Advanced Usage
 
-#### Hand Gestures
+#### Supported Hand Gestures
 
 | Gesture | Command | Action |
 |---------|---------|--------|
@@ -90,62 +109,55 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | 👎 Thumbs Down | Last | Last slide |
 | ✌️ Peace Sign | Blackout | Black screen |
 
-#### Voice Commands
+#### Supported Voice Commands
 
-Use English or Indonesian commands.
+You can use English or Indonesian commands out of the box.
 
 - **Navigation**: "next", "previous", "back", "first", "last", "start", "end"
 - **Control**: "pause", "stop", "play", "resume", "exit", "quit"
 - **Indonesian**: "lanjut", "berikutnya", "kembali", "sebelumnya", "pertama", "terakhir", "berhenti", "jeda", "lanjutkan", "mulai", "keluar"
 
-#### Offline Voice Recognition
+#### Enabling Offline Voice Recognition
 
-Configure offline voice commands in Indonesian using a Vosk model.
+By default, the tool uses Google's Speech Recognition API. To work completely offline with zero latency, you configure a local Vosk model.
 
-1. Create a `models` directory in the project root.
-2. Download the [Vosk Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip).
-3. Extract the contents into the `models` directory.
+1. Create a `models` directory in the project root: `mkdir models`.
+2. Download the [Vosk Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip) (or an English equivalent).
+3. Extract the contents directly into the `models/vosk-model-small-id-0.22` directory.
+4. Set `"offline_mode": true` in your `user_config.json`.
 
-#### Keyboard Controls
+#### In-App Keyboard Controls
 
-While the application runs, press these keys to control the tool:
+While the application is actively running, you press these keys on the active UI window to control the tool's behavior:
 
 | Key | Function |
 |-----|----------|
 | **G** | Switch to Gesture Only mode |
 | **V** | Switch to Voice Only mode |
-| **H** | Switch to Hybrid mode (default) |
+| **H** | Switch to Hybrid mode (both gesture and voice enabled) |
 | **C** | Run calibration wizard |
-| **A** | Auto-detect active application manually |
-| **P** | Pause/Resume detection |
-| **ESC** | Exit application |
-
-If you have trouble with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
-
-```bash
-python main.py --calibrate
-```
+| **A** | Auto-detect active presentation application manually |
+| **P** | Pause/Resume all detection |
+| **ESC** | Exit application gracefully |
 
 ## API Reference
 
-The project exposes a configuration manager that you use programmatically.
+The project exposes a configuration manager that you import to manage the presentation controller programmatically in your own scripts.
 
 ```python
 from config import config_manager, OperationMode
 
-# Get a value
+# Retrieve the current mode
 mode = config_manager.get_mode()
 
-# Set a value (automatically saves to user_config.json)
+# Set a value (this automatically saves to user_config.json)
 config_manager.set_mode(OperationMode.GESTURE_ONLY)
 config_manager.set("debounce_time", 1.0)
 ```
 
-For more details on internal modules, refer to the source code docstrings.
-
 ## Contributing
 
-Contributions are welcome! Please submit a Pull Request.
+See [CONTRIBUTING.md](CONTRIBUTING.md) if you want to help improve the project.
 
 1. Fork the project
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
