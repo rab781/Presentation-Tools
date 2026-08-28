@@ -8,9 +8,11 @@
 
 ## Why This Exists
 
-Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this by turning your webcam and microphone into a universal controller. It automatically detects your presentation software and lets you navigate slides fluidly without breaking your flow.
+Clickers get lost, batteries die, and holding a device limits your expressiveness during a presentation. The Presentation Control Tool solves this pain point. You turn your webcam and microphone into a universal controller, and you navigate slides fluidly without breaking your flow.
 
 ## Quick Start
+
+You clone the repository, install dependencies, and run the main application.
 
 ```bash
 git clone https://github.com/rab781/Presentation-Tools.git
@@ -19,11 +21,21 @@ pip install -r requirements.txt
 python main.py
 ```
 
-## Installation
+```python
+from config import config_manager, OperationMode
 
-**Prerequisites**: Python 3.8+ and a working webcam and microphone.
+# You configure the application programmatically
+config_manager.set_mode(OperationMode.GESTURE_ONLY)
+config_manager.set("debounce_time", 1.0)
+```
 
-First, set up a virtual environment to isolate your dependencies.
+## Tutorials
+
+### Installation
+
+**Prerequisites**: You need Python 3.8+ and a working webcam and microphone.
+
+First, you set up a virtual environment to isolate your dependencies.
 
 ```bash
 # macOS/Linux
@@ -35,34 +47,53 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-Next, install the required packages. If you use macOS or Linux and see an error about `pywin32`, ignore it. It is a Windows-only package.
+Next, you install the required packages. If you use macOS or Linux and see an error about `pywin32`, you ignore it, as it is a Windows-only package.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> **Tip**: If `pip install pyaudio` fails on Windows, install the pre-compiled binary instead:
+> **Tip**: If you see `pip install pyaudio` fail on Windows, you install the pre-compiled binary instead:
 > ```bash
 > pip install pipwin
 > pipwin install pyaudio
 > ```
 
-## Usage
+### Basic Usage
 
-### Basic Example
-
-Start the controller by running the main script. Stand 0.5 to 2 meters from your webcam, open your presentation (like PowerPoint or Google Slides), and use gestures or voice to navigate.
+You start the controller by running the main script. You stand 0.5 to 2 meters from your webcam, open your presentation (like PowerPoint or Google Slides), and use gestures or voice to navigate.
 
 ```bash
 python main.py
 ```
 
-- **Swipe right** to go to the next slide.
-- **Say "previous"** to go back.
+- You **swipe right** to go to the next slide.
+- You say **"previous"** to go back.
+
+## How-To Guides
+
+### How to Configure Offline Voice Recognition
+
+You configure offline voice commands in Indonesian using a Vosk model.
+
+1. You create a `models` directory in the project root.
+2. You download the [Vosk Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip).
+3. You extract the contents into the `models` directory.
+4. You configure offline mode by updating `user_config.json` with `"offline_mode": true`.
+
+### How to Calibrate Your Setup
+
+If you experience trouble with gesture detection or voice recognition, you run the calibration wizard. The wizard tests your setup and provides recommended settings.
+
+```bash
+python main.py --calibrate
+```
+
+## Reference
 
 ### Configuration
 
-Customize the application behavior by creating or editing `user_config.json` in the project root.
+You customize the application behavior by creating or editing `user_config.json` in the project root.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -76,9 +107,7 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | `offline_mode` | `boolean`| `false` | Use local Vosk model for voice recognition instead of Google. |
 | `language` | `string` | `"both"` | Active language: `"english"`, `"indonesian"`, or `"both"`. |
 
-### Advanced Usage
-
-#### Hand Gestures
+### Hand Gestures
 
 | Gesture | Command | Action |
 |---------|---------|--------|
@@ -90,25 +119,17 @@ Customize the application behavior by creating or editing `user_config.json` in 
 | 👎 Thumbs Down | Last | Last slide |
 | ✌️ Peace Sign | Blackout | Black screen |
 
-#### Voice Commands
+### Voice Commands
 
-Use English or Indonesian commands.
+You use English or Indonesian commands.
 
 - **Navigation**: "next", "previous", "back", "first", "last", "start", "end"
 - **Control**: "pause", "stop", "play", "resume", "exit", "quit"
 - **Indonesian**: "lanjut", "berikutnya", "kembali", "sebelumnya", "pertama", "terakhir", "berhenti", "jeda", "lanjutkan", "mulai", "keluar"
 
-#### Offline Voice Recognition
+### Keyboard Controls
 
-Configure offline voice commands in Indonesian using a Vosk model.
-
-1. Create a `models` directory in the project root.
-2. Download the [Vosk Indonesian Small Model](https://alphacephei.com/vosk/models/vosk-model-small-id-0.22.zip).
-3. Extract the contents into the `models` directory.
-
-#### Keyboard Controls
-
-While the application runs, press these keys to control the tool:
+While you run the application, you press these keys to control the tool:
 
 | Key | Function |
 |-----|----------|
@@ -120,38 +141,36 @@ While the application runs, press these keys to control the tool:
 | **P** | Pause/Resume detection |
 | **ESC** | Exit application |
 
-If you have trouble with gestures or voice recognition, run the calibration wizard to test your setup and receive recommended settings.
+### API Reference
 
-```bash
-python main.py --calibrate
-```
-
-## API Reference
-
-The project exposes a configuration manager that you use programmatically.
+You use the configuration manager programmatically.
 
 ```python
 from config import config_manager, OperationMode
 
-# Get a value
+# You get a value
 mode = config_manager.get_mode()
 
-# Set a value (automatically saves to user_config.json)
+# You set a value (automatically saves to user_config.json)
 config_manager.set_mode(OperationMode.GESTURE_ONLY)
 config_manager.set("debounce_time", 1.0)
 ```
 
-For more details on internal modules, refer to the source code docstrings.
+## Explanation
+
+### Application Detection
+
+The Presentation Control Tool automatically detects your active presentation software. It monitors the active window title and process name, and maps your gestures or voice commands to the specific keyboard shortcuts required by that application (e.g., PowerPoint, Google Slides, PDF viewers).
 
 ## Contributing
 
-Contributions are welcome! Please submit a Pull Request.
+Contributions are welcome! You submit a Pull Request by following these steps:
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. You fork the project.
+2. You create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. You commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. You push to the branch (`git push origin feature/AmazingFeature`).
+5. You open a Pull Request.
 
 ## License
 
