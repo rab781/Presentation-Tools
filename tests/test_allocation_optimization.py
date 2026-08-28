@@ -76,15 +76,15 @@ class TestAllocationOptimization(unittest.TestCase):
         # Call detect_gesture
         detector.detect_gesture(frame, draw_landmarks=False)
 
-        # Verify cvtColor was called with dst
-        self.assertTrue(mock_cv2.cvtColor.called, "cv2.cvtColor was not called")
-        cvtColor_kwargs = mock_cv2.cvtColor.call_args[1]
-        self.assertIn('dst', cvtColor_kwargs, "cv2.cvtColor should use 'dst' parameter to avoid memory allocation")
-
         # Verify resize was called with dst
         self.assertTrue(mock_cv2.resize.called, "cv2.resize was not called")
         resize_kwargs = mock_cv2.resize.call_args[1]
         self.assertIn('dst', resize_kwargs, "cv2.resize should use 'dst' parameter to avoid memory allocation")
+
+        # Verify cvtColor was called with dst
+        self.assertTrue(mock_cv2.cvtColor.called, "cv2.cvtColor was not called")
+        cvtColor_kwargs = mock_cv2.cvtColor.call_args[1]
+        self.assertIn('dst', cvtColor_kwargs, "cv2.cvtColor should use 'dst' parameter to avoid memory allocation")
 
     def test_double_buffering_preserves_motion_detection(self):
         detector = GestureDetector(processing_scale=0.5)
@@ -111,13 +111,13 @@ class TestAllocationOptimization(unittest.TestCase):
         # Check that absdiff was called (motion comparison is performed)
         self.assertTrue(mock_cv2.absdiff.called, "cv2.absdiff was not called for motion detection")
 
-        # Extract the dst buffers used for resize across all calls (which now does the double buffering)
-        resize_calls = mock_cv2.resize.call_args_list
-        self.assertGreaterEqual(len(resize_calls), 3, "Expected cv2.resize to be called at least 3 times for double buffering validation")
+        # Extract the dst buffers used for cvtColor across all calls (which now does the double buffering)
+        cvtColor_calls = mock_cv2.cvtColor.call_args_list
+        self.assertGreaterEqual(len(cvtColor_calls), 3, "Expected cv2.cvtColor to be called at least 3 times for double buffering validation")
 
         dst_buffers = []
-        for _, kwargs in resize_calls:
-            self.assertIn("dst", kwargs, "cv2.resize should use 'dst' parameter to avoid memory allocation")
+        for _, kwargs in cvtColor_calls:
+            self.assertIn("dst", kwargs, "cv2.cvtColor should use 'dst' parameter to avoid memory allocation")
             dst_buffers.append(kwargs["dst"])
 
         # There should be exactly two buffers that are reused
