@@ -138,7 +138,7 @@ class PresentationController:
             print(f"Executed: {command} ({source}) -> {shortcuts}")
             
             # Play sound effect if enabled
-            if self.sound_enabled:
+            if self.sound_enabled and HAS_WINSOUND:
                 self._play_sound_effect(command)
         
         except Exception as e:
